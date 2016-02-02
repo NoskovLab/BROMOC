@@ -1,0 +1,4 @@
+#!/bin/bash
+../../eval | awk '{print $1}' | sed 's/://g' > order
+echo rm -r $((sed -n '1,10p' order; sed -n '1,10p' order | while read num; do echo $(($num-1)); done ; cat order ) | sort -g | uniq -u)
+

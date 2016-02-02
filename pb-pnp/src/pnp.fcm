@@ -1,0 +1,86 @@
+!     COMMON BLOCK FOR THE PB/PNP SOLVER
+
+      integer*4   datom,dtype,dnclx,dncly,dnclz,dgrid,dgrid2,mapt
+      integer*4   n11
+      parameter ( datom=100000, dtype=2 )
+      parameter ( dnclx=400, dncly=400, dnclz=800, mapt=10000 )
+!      parameter ( datom=60000, dtype=2 )
+!      parameter ( dnclx=215, dncly=215, dnclz=281, mapt=50000 )           
+!      parameter ( dnclx=250, dncly=250, dnclz=460, mapt=50000 )
+      parameter ( dgrid=dnclx*dncly*dnclz )
+      parameter ( dgrid2=2*(dnclx*dncly+dncly*dnclz+dnclz*dnclx) )
+
+      integer*4 natom,iresid(datom),isegid(datom),listr(datom)
+      integer*4 maxpnp,maxphi,maxcion,ntype
+      integer*4 ncel,nclx,ncly,nclz
+      integer*4 wa(dgrid)
+      integer*4 gnowat(dgrid),gwater(dgrid) 
+
+      real*4  phi(dgrid),phib(dgrid2),war(dgrid)
+      real*4  epsx(dgrid),epsy(dgrid),epsz(dgrid)
+      real*4  fcden(dgrid),mcden(dtype*dgrid),effeps(dgrid)
+      real*4  cion(dtype*dgrid),bcion(dtype*dgrid2)
+      real*4  gsrfen(dtype*dgrid)
+      real*4  greff(dtype*dgrid)
+
+      real*8  totchg,x(datom),y(datom),z(datom),cg(datom),radius(datom)
+      real*8  epsw,epsp,tranx,trany,tranz,dcel,xbcen,ybcen,zbcen
+      real*8  zion(dtype),ctop(dtype),cbot(dtype),diffusion(dtype*dnclz)
+      real*8  pox(mapt),poy(mapt),poz(mapt),fistr(datom)
+      real*8  temp,watr,ionr,conc,kappa2,kap2top,kap2bot
+      real*8  vmemb,zmemb,tmemb,epsm,htmemb,epsh
+      real*8  epso,xocyl,yocyl,zocyl,rocyl,hocyl
+      real*8  epsb,bxmax,bxmin,bymax,bymin,bzmax,bzmin
+      real*8  epsc,xcyln,ycyln,zcyln,rcyln,hcyln
+      real*8  epsec,xecyln,yecyln,zecyln,ax,by,tmin,hecyln
+      real*8  epss,xsphe,ysphe,zsphe,rsphe,rdist
+      real*8  tolphi,tolcion,lambda1,lambda2
+      real*8  xa(datom),ya(datom),za(datom),wmain(datom)
+      real*8  pb(datom),stern(datom),vdw(datom)
+      real*8  rion(dtype)
+      logical qpbeq,qpnp,qmcden,qphi,qmmij,qrfpar
+      logical qnonlinear,qpartlinear,qunder
+      logical qreen,qphifocus,qcionfocus
+      logical qphixypbc,qphixyzpbc,qcionxypbc
+      logical qzerobp,qrho,qflux,qcurrent
+      logical qckap,qeckap,qskap,qbkap,qokap
+      logical qnmcden,qiterate
+      logical qporin,qbox
+
+      character*4 resid(datom),segid(datom),aname(datom)
+      character*4 resid1(datom),aname1(datom)
+      character*4 iontype(dtype)
+
+      common / cpnp0 /  natom,iresid,isegid,listr,
+     $                  maxpnp,maxphi,maxcion,ntype,
+     $                  ncel,nclx,ncly,nclz,n11
+
+      common / cpnp1 /  phi,phib,epsx,epsy,epsz,fcden,mcden,effeps,
+     $                  wa,war,cion,bcion
+
+      common / cpnp2 /  totchg,x,y,z,cg,radius,xa,ya,za,wmain,
+     $                  epsw,epsp,tranx,trany,tranz,dcel,
+     $                  xbcen,ybcen,zbcen,vdw,stern,pb,
+     $                  zion,ctop,cbot,diffusion,
+     $                  pox,poy,poz,fistr,
+     $                  temp,watr,ionr,conc,kappa2,kap2top,kap2bot,
+     $                  vmemb,zmemb,tmemb,epsm,htmemb,epsh,
+     $                  epso,xocyl,yocyl,zocyl,rocyl,hocyl,
+     $                  epsb,bxmax,bxmin,bymax,bymin,bzmax,bzmin,
+     $                  epsc,xcyln,ycyln,zcyln,rcyln,hcyln,
+     $                  epsec,xecyln,yecyln,zecyln,ax,by,tmin,hecyln,
+     $                  epss,xsphe,ysphe,zsphe,rsphe,rdist,
+     $                  tolphi,tolcion,lambda1,lambda2
+
+      common / cpnp3 /  qpbeq,qpnp,qmcden,qphi,qmmij,qrfpar,
+     $                  qnonlinear,qpartlinear,qunder,
+     $                  qreen,qphifocus,qcionfocus,
+     $                  qphixypbc,qphixyzpbc,qcionxypbc,
+     $                  qzerobp,qrho,qflux,qcurrent,
+     $                  qckap,qeckap,qskap,qbkap,qokap,
+     $                  qnmcden,qiterate,
+     $                  qporin,qbox
+
+      common / cpnp4 /  resid,segid,aname,iontype,resid1,aname1
+      
+      common / cpnp5 /  rion,gsrfen,greff,gnowat,gwater

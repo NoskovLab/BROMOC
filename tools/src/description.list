@@ -1,0 +1,47 @@
+AVERAGE            Reads text files and computes average of the second column of each file
+BCO2XYZ            Converts BROMOC Coordinates to XYZ
+BTR2BCO            Converts BROMOC trajectory (BTR) to BROMOC coordinates (BCO)
+BTREXTRACT         Extract from BROMOC Trajectory (.btr) a particular frame to another BROMOC trajectory file (.btr)
+BTRCONV            Converts BROMOC trajectory to PDB,GRO,XTC,DCD
+BTRDUMP            Write out coordinates of a specified particle number
+BTRREAD            Reads BTR BROMOC trajectories 
+CALC-MU            Extrapolates µ (ECP) for a given concentration from a table of µ vs. concentration for the ion and counterion
+CATBTR             Concatenates several BROMOC trajectories into one
+CATDCD             Concatenates several DCD trajectories into one
+CHECKBTR           Checks BROMOC trajectories for inconsistencies
+CHGCNTRATE         Average First N Points
+COARSE             Converts atomistic DNA to coarse grained DNA 
+COARSETRJ          Similar to COARSE but works for trajectories too. (only dcd, trj2trj can be use to convert to other format)
+COMPESSCOOR        Computes Essential Coordinates for DNA to use in BROMOC inputparam
+CONC-BROMOC        Reads BROMOC trajectory and computes concentration for each particle type (useful to get efpot)
+CONC-CALC          Re-calculates concentration from CONC-BROMOC output files (useful to get efpot)
+CONVRECHEAD        Converts 8-bytes record header of unformatted fortran files to 4-bytes (useful to correct maps obtained in a different arquitecture machine) 
+CRD2CRD-SPECIAL    Converts CRD CHARMM/NAMD Atomistic DNA to NAMD/CHARMM CRD Coarse DNA (useful for COMPESSCOOR)
+DCDEXTRACT         Manipulates DCD and DCDE
+DIGIT              Given two numbers, if the first number is divisible by the second prints 1 otherwise 0. Works for real numbers. 
+                   Useful to select numbers with particular digit precision.
+DNADF_CHARMM       Computes (from atomistic dcd) the Cylindrical Distribution Function (CDF) between the DNA fragments and free particles
+                   It also computes the Radial Distribution Function (RDF) between the DNA fragments and free particles 
+DNAMSD_BROMOC      Computes mean square displacement of DNA fragments from BROMOC trajectories
+FINDCENTER         Finds Structure Center of a Trajectory by RMSd
+FIT-IT             Fit mu (chemical potential) vs concentration and extrapolate mu for given concentration (useful to get efpot)
+FLUX-BROMOC        Computes the ions flux/current using BROMOC trajectory
+GENDATA            Generates Gaussian distributed data points
+GENERDNASEQ        Generates Random DNA Sequence. Uses CPU clock to generate randomness
+GYRADBTR           Computes the radius of gyration (gyradius) of DNA from BROMOC Trajectory
+MARKOVMACROTRJ     Produces Markovian Macrostates Trajectories
+NOISEFILTER        Reduces noise from a given data set by averaging N contiguous points
+TRJ2TRJ            Save specified frames from a trajectory into a new one
+OLDBCO2NEWBCO      Converts Old BCO 3' DNA writting format into new format
+PDB2BCO            Converts PDB to BCO (BROMOC Coordinates)
+PDB2CRD            Converts PDB to CRD (CHARMM Coordinates)
+PICKNUM            Generates Random Natural Numbers
+POTMAP-PBEQ-READ   Reads CHARMM PBEQ Potential Map
+RDF-BROMOC         Reads BROMOC CG-GCMCBD trajectory and computes RDF for spherical system (useful to get perfectly normalized RDF without periodic boundary conditions)
+RMSDBTR            Computes root mean square deviation of DNA with respect to the first structre from BROMOC Trajectory (.btr)
+STATS              Calculates media and standard deviation of a column data
+STT                Calculates media and standard deviation from standard input
+TRANSCRD           Moves and rotates coordinates in crd file (useful to compute maps in pb-pnp)
+XSSURF             Computes the cross-section free surface along z-axis considering the pore and DNA from BROMOC Trajectory files and Repulsion maps 
+XTCREAD            Reads XTC GROMACS trajectories
+HISTOGRAM          Creates histograms

@@ -1,0 +1,1315 @@
+                     -----------------------------------------------
+                    |  BROMOC (CG-GCMC-BD) 4.11 Documentation file  |
+                     -----------------------------------------------
+
+
+  Coarse Grain, Grand Canonical Monte Carlo and Brownian Dynamics Simulation Program
+  -----------------------------------------------------------------------------------
+
+  BROMOC (CG-GCMC-BD: Coarse Grain, Grand Canonical Monte Carlo and Brownian Dynamics) program is designed to simulate a Brownian dynamics trajectory of ions and a Coarse Grained DNA in a channel/membrane system. In particular, the Grand Canonical Monte Carlo method is used to maintain the desired electrochemical conditions in the boundaries (buffer regions) of the simulation system which are in (equilibrium) contact with the bulk. BROMOC can be used to do Brownian dynamics simulations and Monte Carlo moves of ions. BROMOC package include a variety of tools to perform a variety of analysis and set-up parameters for BROMOC runs. BROMOC can be used by setting up an input file with the corresponding keywords and command to do the desired simulation.
+
+LAST MODIFICATION
+-----------------
+
+Dec 15th, 2014
+
+
+REFERENCES
+----------
+
+1. W. Im and S. Seefeld and B. Roux,  Biophys. J. 79:788-801 (2000).
+2. W. Im and B. Roux, J. Chem. Phys. 115:4850-4861 (2001). 
+3. W. Im and B. Roux, J. Mol. Biol. 322:851-869 (2002). 
+4. Pablo M. De Biase, Carlos J. F. Solano, Suren Markosyan, Luke Czapla, and Sergei Yu. Noskov
+   BROMOC-D: Brownian Dynamics/Monte-Carlo Program Suite to Study Ion and DNA Permeation in Nanopores
+   J. Chem. Theory Comput., 2012, 8 (7), pp 2540-2551, DOI: 10.1021/ct3004244, Publication Date (Web): May 24, 2012
+5. Pablo M. De Biase*, Suren Markosyan, and Sergei Noskov*
+   Microsecond Simulations of DNA and Ion Transport in Nanopores with Novel Ion-Ion and Ion-Nucleotides Effective Potentials
+   J. Comput. Chem., 2014, published online: 12 FEB 2014, DOI: 10.1002/jcc.23544
+6. Pablo M. De Biase*, Suren Markosyan, and Sergei Noskov*
+   BROMOC suite: Monte Carlo/Brownian dynamics suite for studies of ion permeation and DNA transport in biological and artificial pores with effective potentials
+   J. Comput. Chem., 2014, published online: 15 DEC 2014, DOI: 10.1002/jcc.23799
+
+
+WARNING
+-------
+
+   The program has not been used in numerous situations and caution
+   should be the rule. All problems should be reported to Pablo De Biase or Sergei Noskov
+
+BUGS
+----
+
+   Report bugs or suggest new features or improvements to Pablo M. De Biase at pablodebiase@gmail.com
+
+
+AUTHORS
+-------
+
+  BROMOC was developed based on GCMC-BD program.
+
+   GCMC-BD Authors:
+   . Benoit Roux at roux@uchicago.edu, phone 773-834-3557 
+   . Wonpil Im at wonpil@ku.edu 
+   . Sergei Noskov at snoskov@ucalgary.ca
+   . Bernhard Egwolf at egwolf@uchicago.edu
+
+   BROMOC Authors:
+   . Pablo M. De Biase at pablodebiase@gmail.com
+   . Sergei Noskov at snoskov@ucalgary.ca
+   . Carlos Solano at cjfqct@gmail.com
+
+
+INTERPRETATION OF SYMBOLS
+--------------------------
+
+[] means that can be omitted
+{} means that activates a functionality if present.
+() Denotes type of input. Could be integer, real, character string.
+<> Used to refer to particles type
+|| Used to refer to default values
+
+
+KEYWORDS SUMMARY
+----------------
+
+TITLE        title
+SYSTEM       define size of box, temperature, dielectric constant, ionic strength, debye huckel, iseed, etc
+NUCLEOTIDES  define DNA
+APFORCE      apply force to DNA sites
+FIXSITE      fix DNA sites
+PARTICLES    define free particles (ions)
+BUFFERS      define GCMC buffers region
+LJSIN        define single particle Lennard Jones parameters
+LJPAR        define pair of particles Lennard Jones parameters
+MEMBRANE     define membrane
+PROXDIFF     define DNA proximity diffusivity
+PROFILE      define space dependent diffusion coefficient profile
+DIFFUSION    space dependent diffusion coefficient
+SRPMF        define Short-Range Potential Mean Force
+EFPOT        define efective potential
+GSBP         define static, repulsion and reaction field
+SVDW         define SVDW (see GSBP) scalar factor for each type
+COOR         set up, manage, read coordinates and setup constants
+NOTRANS      enable/disable translation of DNA centroid
+CONTRANS     enable/disable constrains DNA centroid and/or sites translation
+CHDEN        enable computing charge density (use in combination with chden keyword in SIMUL and PRINT)
+SIMULATION   run simulation
+ENERGY       compute energy
+INTERACTION  compute energy for single particles
+OPEN         open file
+PRINT        print coordinates, iseed, title, DNA centroid, system info
+COUNT        Count all the particles and assign them to their appropriate buffer
+TEST         Compare the analytical forces with the finite-difference forces
+CLOSE        Close file
+# * !        Comment symbol headers
+EXIT         End program
+
+Note: Only the first 5 characters of keywords are interpreted.
+
+
+KEYWORDS DETAILED DOCUMENTATION
+-------------------------------
+In the following, the syntax and the function of the program are given. All keywords are case insensitive.
+
+
+*************
+*** Title ***
+*************
+
+syntax: 
+
+  TITLE name mytitle
+
+example:
+  
+  TITLE name FirstRun
+
+ 
+**************************************************************
+*** SYSTEM: System dimension, type and physical properties ***
+**************************************************************
+
+  The system comprised the portion of space where mobile particles are bound into, including the buffer regions. With this keyword it can be defined system dimensions such as size, position and shape of the system, and other physical properties of the system such as temperature, dielectric constant and transmembrane electric potential. Currently, the allowed shapes are spherical, cylindrical and orthorhombic.  The center of the system can be set at any position and by default it is assumed to be at the origin (0,0,0). Temperature and dielectric constant that will be used for mobile particles dynamics. Simulations of DNA can be done under implicit ions assumption using Debye Huckel approximation. To enable implicit ions it is necessary to input ionic strength of the solution. Dielectric constant of a solution can be estimated automatically based on the salt concentration and temperature. The seed number (iseed) for the random number generator can be defined here. If iseed is zero, iseed will be generated using the CPU clock. It is possible to remove the restrain that keeps the DNA inside the system box. If this option is enabled and explicit ions are being used the keyword debyhyb must be set joinly with ionic strength so as coulombic interations for DNA phosphates are screened using Debye Huckel when part of the DNA is outside of the system boundaries where ions are absent. The electrochemical boundary conditions should be defined for each ion for each buffer region. This keyword must be called first but can be recalled several times to redefine parameters. Unchanged parameters after first time called may be omitted except for those between {}.
+
+syntax:
+
+  SYSTEM {ecyl} [lx (real) ly (real) lz (real)] [{sphere} radi (real)] [cx (real)] [cy (real)] [cz (real)] [cdie (real)] [temp (real)] -
+          {debye} {debyhyb} [ionic (real)] [{calcdie} conc (real)] [iseed (integer)] {pres} [volt (real)] {showwarn} {dnafree} 
+
+  lx              |0.0| : Orthorhombic box size along the X-axis (Ang.)
+  ly              |0.0| : Orthorhombic box size along the Y-axis (Ang.)
+  lz              |0.0| : Orthorhombic box size along the Z-axis (Ang.)
+  {sphere}              : Enables spherical system
+  radi            |0.0| : The radius of a spherical system (Ang.)
+  {ecyl}                : Enables elliptical cylinder system 
+                          lx is now one diameter of ellipse and ly is the other diameter, 
+                          lz is the length of the cylinder
+  cx              |0.0| : Center of system along the X-axis (Ang.)
+  cy              |0.0| : Center of system along the Y-axis (Ang.)
+  cz              |0.0| : Center of system along the Z-axis (Ang.)
+  cdie           |80.0| : Dielectric constant relative to vacuum
+  temp          |300.0| : Temperature (K)
+  ionic           |0.0| : Ionic strength (for membrane and debye)
+  {debye}               : Enables Implicit Ions (Debye Huckel) (senseless if no DNA)
+  {calcdie}             : Enables Estimator of Dielectric Constant based on salt concentration and temperature
+  conc            |0.0| : Salt concentration in Molar units needed for calcdie to compute dielectric constant
+  iseed       |3141593| : define random number generator seed number. If zero or lower will use cpu clock to generate seed.
+  {pres}                : Enables computation of system virial pressure in bar.
+  volt            |0.0| : transmembrane potential (V) (for membrane)
+  {showwarn}            : Print detailed overlapping warnings. If absent will print
+                          number of ocurred warnings at the end of each simulation.
+  {dnafree}             : Do not restrain DNA to be inside the system box
+  {debyhyb}             : Use in combination with "dnafree" to compute coulombic interaction
+                          for DNA phoshates screened using Debye Huckel when DNA is outside box where 
+                          ions are absent. Use ionic keyword to define ionic strength. 
+                          Working with spherical, cylindrical and rectangular boxes.
+
+examples:
+
+  SYSTEM LX 50.0 LY 50.0 LZ 50 cdie 78.0 temp 298.0
+  SYSTEM sphere radi 60.0 temp 298.0 calcdie conc 0.1
+
+
+*****************************************
+*** NUCLEOTIDES: Coarse grained B-DNA ***
+*****************************************
+
+  This keyword enables the usage of coarse grain DNA. Each nucleotide is compose by a phosphate, sugar and base group. Single and double strands may be used. Diffusivity of nucleotides can be set here. There is a bonded and non-bonded potential parameter which controls the strength of all internal DNA interactions. Details of this coarse grain model can be found in ref a and b[cite de pablo papers]. There are 4 pre-defined DNA structures. However, the option of creating a custom DNA structure is available. COMPESSCOOR (BROMOC tool) can create a set of essential coordinates given a specific structure of DNA that can be used as input for BROMOC. By default 5' phosphate is removed from the DNA structure but it can optionally be conserved. The default order for building the DNA structure is from 5'  to 3' direction. This can be inverted optionally. The DNA sequence for the first and (if applies) second strand is defined right after this keyword is invoked. The second strand sequence is not needed to be explicitly written if it is complementary to the first. Otherwise, a particular keyword can be called and the second strand sequence can be written explicitly after the first. The default charge of phosphates is set to -1. This can be optionally changed if needed. Allowed nucleotides types are A, T, G and C. A special keyword to control DNA Temperature has been implemented. This keyword can control the temperature of DNA used during dynamics but using the system temperatures for the rest of the particles. This keyword also linearly scales the DNA diffusivity accordingly therefore the DNA diffusivity used must correspond to the system temperature. The Base Pairing interaction can be scaled in a way the the attracting forces can be increased or reduced as wished. Solvent-induced contribution developed by De Pablo et al is implemented. Activation of this option improves DNA denaturation properties thus may only be used for double stranded DNA. If this option is enabled univalent salt concentration in this section must be defined.
+  If PARTICLES is not present cannot be omitted.
+
+syntax: 
+
+  [NUCLEOTIDES] strands (integer) nucleot (integer) [diffusion (real)] [eps (real)] [{solv} conc (real)] [scalepairing (real)] [dnatemp (real)]-
+                {printinfo} [charge (real)] {3-5} {explicit2nd} {inputparam} {keepfirstp} {depablo} {charmmwat} {charmmvac} {charmmwatbc}
+  <type> <type> <type> ...  (first strand 5' to 3')
+  <type> <type> <type> ...  (second strand 3' to 5' if explicit2nd)
+  (real) (real) (real) ...  (if inputparam)
+  END
+  
+  strands       |    0| : Number of DNA strands
+  nucleot       |    0| : Number of nucleotides for each strand
+  diffusion     | 0.1 | : Diffusion constant [Ang.*2/ps]
+  dnatemp       | temp| : DNA Temperature can be defined independentely to the other particles.
+                          DNA Diffusivity is readjusted proportionally to the temperature.
+  eps           |0.184| : Bonded and non-bonded potential parameter (kcal/mol) (de Pablo et al, Biophysical Journal (2009), 96, 1675)
+  {solv}                : Enables Solvent-induced contribution (improves DNA denaturation properties)
+  conc          | 0.0 | : Univalent salt Concentration for solv
+  charge        |-1.0 | : Charge for phosphates
+  scalepairing  | 1.0 | : Scale Base Pairing Energy/Forces by scalepairing
+  <type>        |   A | : Nucleotide type sequence. Available types: A T G C. Sequence order is from 5' to 3'
+  {printinfo}           : Print DNA details info
+  {explicit2nd}         : Allows specification of complementary strand to be written explicitly 
+                          following then line of the first strand. Sequence order is 3' to 5'
+  {3-5}                 : Enables reading and writting sequences in the opposite order: 
+                          3' to 5' for 1st strand and 5' to 3' for 2nd strand
+  {inputparam}          : Enables manual input of structural parameters for DNA in the last line before END.
+                          The input format is in cylindrical coordinates (xydist xyang z). Distances in Ang 
+                          and Angles in degrees. The order for cylindrical coordinates is Ab Tb Cb Gb S P. 
+                          The followings parameters are internuclear distances and angles.
+  {keepfirstp}          : Includes first 5' P in the structure (by default is not included)
+  {depablo}             : Uses De Pablo et al geometric parameters for DNA
+  {charmmvac}           : Uses CHARMM DNA geometric parameters in vacuo. P at P, S at geometric center of heavy atoms within the ring, Base as De Pablo definition.
+  {charmmwat}           : Uses CHARMM DNA geometric parameters in implicit water. P at P, S at geometric center of sugar ring heavy atoms, Base same as De Pablo definition.
+  {charmmwatbc}         : Uses CHARMM DNA geometric parameters in implicit water. P at P, S at geometric center of sugar ring heavy atoms, Base at geometric center of bases heavy atoms.
+
+                          If all are omitted, BROMOC uses charmmwatbc.
+
+example:
+  NUCLEO strands 1 nucleot 5 
+  A C G T A
+  END
+example:
+  NUCLEO strands 2 explicit2nd nucleot 5 inputparam diffusion 0.001 dnatemp 100.0
+  A C G T A
+  T G G A T
+  0.773 -41.905 -0.051 2.349 -86.119 -0.191 2.296 -85.027 -0.187 0.828 -40.691 -0.053 6.981 -70.197 -1.280 8.918 -94.038 -2.186 3.38 36.0
+  END 
+
+**************************************************
+*** APFORCE: Apply Constant force to DNA sites ***
+**************************************************
+
+  Applies a constant force vector to a group of DNA sites. This can be used for example to stretch the DNA or to force separation of two strands.
+
+
+syntax:
+
+  [APFORCE] afn (integer n)
+  (integer 1)   [fx (real)] [fy (real)] [fz (real)]
+  ...
+  (integer n)   [fx (real)] [fy (real)] [fz (real)]
+  END
+  
+  afn         | 0 | : Number of sites to appy force
+  (integer 1)       : First site number
+  (integer n)       : Last (afn) site number to apply force
+  fx          |0.0| : Force to be applied along the x axis in kcal/mol/Ang
+  fy          |0.0| : Force to be applied along the y axis in kcal/mol/Ang
+  fz          |0.0| : Force to be applied along the z axis in kcal/mol/Ang
+
+example:
+  APFORCE afn 5
+  1  fx 0.1 fy 0.1 fz 0.1
+  6  fz 0.2
+  8  fz -0.1
+  10 fx 0.1
+  11 fy -0.1
+  END
+
+*************************
+*** FIXSITE: Fix site ***
+*************************
+
+   Fixes the position of a group of DNA sites by ignoring the displacements of the selected sites during dynamics.
+
+syntax:
+
+  [FIXSITE] nstfx (integer n)
+  (integer 1) ... (integer n)      
+  END
+
+  nstfx         | 0 | : Number of sites to fix
+  (integer 1)         : First site number to fix
+  (integer n)         : Last (nstfx) site number to fix
+
+example:
+  FIXSITE nstfx 5
+  1 6 8 10 12
+  END
+
+
+*********************
+*** NOTRANSLATION ***
+*********************
+
+ Avoids translation of DNA centroid. Centroid can be fixed at x, y or z axis. Must be positioned after COOR. Can be used several times to enable/disable it or to read the actual DNA geometric center. Can turn off translation in x, y and/or z direction.
+
+syntax:
+
+  [NOTRANS] {off} {x} {y} {z}
+
+  {off}         |Disabled|   : Enable translation of DNA again. Will ignore "x" ,"y", "z" keywords. If omitted won't translate DNA.
+  {x}           |Enabled |   : Disable translation of DNA in x direction. If ommited will translate DNA in x.
+  {y}           |Enabled |   : Disable translation of DNA in y direction. If ommited will translate DNA in y.
+  {z}           |Enabled |   : Disable translation of DNA in z direction. If ommited will translate DNA in z.
+
+
+example1:
+ Do not translate DNA at all
+ NOTRANS x y z
+
+example2:
+ Allow translation of DNA again
+ NOTRANS off
+
+example3:
+ Do not translate DNA in z direction but do in all others
+ NOTRANS z
+
+
+*****************************
+*** CONSTRAIN TRANSLATION ***
+*****************************
+
+  Enables harmonic constrain of DNA centroid or sites translation. Can constrain translation in x, y and/or z direction. For centroid, a harmonical force is applied to all DNA sites when the DNA centroid is moved away from the defined position. The applied force is the product of the centroid displacement and a defined force constant divided by the number of sites. For a site, the applied force is the product of the site displacement and a force constant. Must be positioned after COOR. Can be used several times to enable/disable it or to read the actual DNA geometric center. Can constrain translation in x, y and/or z direction.
+
+For centroid:
+A harmonical force is applied to all DNA sites when the DNA centroid is moved away from the defined position:
+
+Forces:
+fxi=-kx*(x-x0)/nsites
+fyi=-ky*(y-y0)/nsites
+fzi=-kz*(z-z0)/nsites
+
+i: each DNA site
+
+For sites:
+A harmonical force is applied to selected DNA sites:
+
+Forces:
+fxi=-kx*(x-x0)
+fyi=-ky*(y-y0)
+fzi=-kz*(z-z0)
+
+x, y, z: coordinates of geometric center or site center
+i: selected DNA site
+
+Energy:
+Econ = SUM(0.5*kx*(x-x0)^2 + 0.5*ky*(y-y0)^2 + 0.5*kz*(z-z0)^2)
+
+Force constant must be in kcal/(mol*Ang^2).
+If you wish that centroid/site at x move around a distance s (in Ang) the constant kx must be:
+kx = kT/s^2
+where k is boltzmann constant in kcal/mol/K (0.00198720416527) and T temperature in kelvin
+
+syntax:
+
+  [CONTRANS] {off} ctn (integer) {print} {unsplit}
+  (integer 0)   [kx (real)] [ky (real)] [kz (real)] [x (real)] [y (real)] [z (real)]
+  (integer 1)   [kx (real)] [ky (real)] [kz (real)] [x (real)] [y (real)] [z (real)]
+  ...
+  (integer n)   [kx (real)] [ky (real)] [kz (real)] [x (real)] [y (real)] [z (real)]
+  END
+
+  {off}             : Disable constrain of DNA. Will ignore "kx" ,"ky", "kz" keywords. If omitted will enable constrain of DNA.
+  {print}           : Print contrans energy and position
+  {unsplit}         : Prevent double stranded DNA splitting when constraining centroid
+                      (usage in conjuntion with keyword x y z not recommended unless you know what your doing)
+  x        |actual| : Define x position
+  y        |actual| : Define y position
+  z        |actual| : Define z position
+  kx       |0.0|    : Enable constrain of DNA in x direction using kx force constant. If ommited won't constrain DNA in x.
+  ky       |0.0|    : Enable constrain of DNA in y direction using ky force constant. If ommited won't constrain DNA in y.
+  kz       |0.0|    : Enable constrain of DNA in z direction using kz force constant. If ommited won't constrain DNA in z.
+  ctn      |0|      : Number of constrains sites+centroid
+  (integer 0)       : Geometric center
+  (integer 1)       : First site number
+  (integer n)       : Last site number
+
+example1:
+ Constrain DNA at directions
+ CONTRANS ctn 3 print
+ 0 kx 0.1 ky 0.1 kz 0.1
+ 1 kx 0.1 ky 0.1 kz 0.1
+ 10 kx 0.1 ky 0.1 kz 0.1
+ END
+
+example2:
+ Release constrains
+ CONTRANS off
+ END
+
+example3:
+ Constrain translatation of DNA in z direction but do not in all others
+ CONTRANS
+ 0 kz 0.1
+ END
+
+
+**************************************
+*** PARTICLES: Particle definition ***
+**************************************
+
+
+   The properties of ions are defined for the rest of the simulation such as type, charge and diffusivity. Different ions can be defined in a separate line. If NUCLEOTIDES is not present cannot be omitted.
+
+syntax:
+
+  [PARTICLES]
+  <ion-type> [charge (real)] [diffusion (real)]
+  END
+  
+  <ion-type>            : ion type (should be less than 4 characters)
+  charge      	|0.0| : particle charge [e]
+  diffusion 	|0.1| : diffusion constant [Ang.**2/ps]
+
+example: 
+
+  PARTICLES
+  POT  charge  1.0  diffusion 0.196
+  CLA  charge -1.0  diffusion 0.203
+  END
+
+
+
+**********************************
+*** BUFFERS: Buffer definition ***
+**********************************
+
+  This keyword is used when Gran Canonical Monte-Carlo is activated (GCMC). GCMC is used to keep a constant electro-chemical potential in the system. The size of the system including the buffer regions as well as the electrochemical boundary conditions are defined here. The electrochemical boundary conditions should be defined for each ion for each buffer region. An average number of ions in a buffer region can be defined by specifying a concentration or an average number. The intrinsic excess chemical potential (ECP) of ions must be known. ECP depends on the interaction potentials of each ion and may depend on the box size as well.
+As shown in Ref. 2, it may be a bit difficult to maintain boundary concentrations in the buffer regions when the reaction field is included in a high concentration. To avoid the expected large deviation from an average number of ions in the buffer regions, [bufferbias] keyword can be used. 
+
+syntax:
+
+  [BUFFERS]
+  <ion-type> conc (real) aver (real) mu (real) [volt (real)] LZmin (real) LZmax (real) [{bufferbias} kb (real)] Rmin (real) Rmax (real)
+  END
+  
+  Rmin            |0.0| : a minimum position of buffer sphere
+  Rmax            |0.0| : a maximum position of buffer sphere
+  <ion-type>            : ion type (must be defined in Particle definition, see above)
+  conc            |0.0| : concentration for a specific ion in a buffer (Molar)
+  aver            |0.0| : average number for a specific ion in a buffer
+  mu              |0.0| : intrinsic chemical potential of a specific ion at 
+                          a specific concentration (kcal/mol)
+  volt            |0.0| : an applied transmembrane potential for a buffer (V) 
+  LZmin         |-LZ/2| : a minimum position of a buffer along the Z-axis (Ang.)
+  LZmax 	 |LZ/2| : a maximum position of a buffer along the Z-axis (Ang.)
+  {bufferbias}          : Activates avoidance of unexpected large deviation from an average number of ions in the buffer regions.
+  kb              |0.0| : needed in bufferbias. kb has no dimension
+
+example 1: an orthorhombic system 
+
+  BUFFERS 
+  POT  conc 1.00  mu -0.43249  voltage -0.025  LZmin  41.0   LZmax  43.25  bufferbias  kb 1.0
+  CLA  conc 1.00  mu -0.45704  voltage -0.025  LZmin  41.0   LZmax  43.25  bufferbias  kb 1.0
+  POT  conc 0.10  mu -0.18243  voltage  0.00   LZmin -43.25  LZmax -41.0   !bufferbias  kb 1.0
+  CLA  conc 0.10  mu -0.18435  voltage  0.00   LZmin -43.25  LZmax -41.0   !bufferbias  kb 1.0
+  END
+
+example 2: a spherical system
+
+  BUFFERS 
+  POT conc 1.0  mu -0.43249  volt  0.04  Rmin 30.25 Rmax 32.75 LZmin 14.1 LZmax 32.75
+  CLA conc 1.0  mu -0.45704  volt  0.04  Rmin 30.25 Rmax 32.75 LZmin 14.1 LZmax 32.75
+  POT conc 1.0  mu -0.43249  volt  0.00   Rmin 30.25 Rmax 32.75 LZmin -32.75 LZmax -14.1
+  CLA conc 1.0  mu -0.45704  volt  0.00   Rmin 30.25 Rmax 32.75 LZmin -32.75 Lzmax -14.1
+  END
+
+
+Interaction Pairwise Potential
+==============================
+  The interaction between two particles are described through two kinds of interaction pairwise potentials in BROMOC: An analytical form and a discrete form. The analytical form is composed by three analytical terms: a Coulombic, Lennard-Jones and Short-Range Potential of Mean Force term. The discrete form is composed by a table of data where any kind of discrete function is allowed. This discrete function will be converted into a continuous function by polynomial interpolation.[Ref 5]
+
+Analytical Potential Keywords:
+------------------------------
+   LJSIN: Defines single particle Lennard Jones parameters that then will be extrapolated for pair of particles using two combination rules: the arithmetic mean for sigma and geometric mean for epsilons.
+   LJPAR: Defines Lennard Jones parameters for pair of particles if LJSIN is not used.
+   SRPMF: Define Short-Range Potential Mean Force parameters for pair of particles (cite BROMOC paper)
+	
+Effective Potentials
+--------------------
+  Effective potentials tables may be used to compute pair interactions. If effective potential is activated for a particular pair, analytical potentials will be ignored for that pair. It is possible to build effective potentials from analytical potentials, in that case analytical potentials parameters must be present. [cite  efpot paper]
+
+
+************************************************************
+*** LJSIN: Lennard Jones parameters for single particles ***
+************************************************************
+
+  Lennard Jones parameters for single particles. Will be converted for pair of particles
+using combination rules ((sig1+sig2)/2 for sigma, sqrt(eps1*eps2) for epsilon)
+
+  syntax:
+  
+  [LJSIN]
+  <type> epsilon (real) sigma (real)
+  END
+  
+  <type>                : ion/dna type. Ion type (must be same as defined in PARTICLE section, see above)
+                          if dna fragment, available types are: P S Ab Cb Gb Tb
+  epsilon         |0.0| : epsilon Lennard Jones parameter (kcal/mol)
+  sigma           |0.0| : sigma Lennard Jones parameter (Angstroms)
+
+example:
+  LJSIN
+  POT  epsilon 0.087 sigma 4.1
+  CLA  epsilon 0.150 sigma 3.9
+  END
+
+
+*************************************************************
+*** LJPAR: Lennard Jones parameters for pair of particles ***
+*************************************************************
+
+  Lennard Jones parameters for pairs. Once defined will override LJSIN.
+
+syntax: 
+
+  [LJPAR]
+  <type> <ion-type> epsilon (real) sigma (real)
+  END
+  
+  <type>                : ion/dna type. Ion type (must be same as defined in PARTICLE section, see above)
+                          if dna fragment, available types are: P S Ab Cb Gb Tb
+  epsilon         |0.0| : epsilon Lennard Jones parameter (kcal/mol)
+  sigma           |0.0| : sigma Lennard Jones parameter (Angstroms)
+
+example:
+  LJPAR 
+  POT P epsilon  0.1250 sigma 3.25
+  POT S epsilon  0.0750 sigma 3.65
+  CLA P epsilon  0.1000 sigma 5.45
+  CLA S epsilon  0.1000 sigma 6.85
+  POT Ab epsilon 0.2000 sigma 4.65
+  CLA Ab epsilon 0.2000 sigma 6.69
+  END
+
+
+*******************************************************
+*** SRPMF: Short-range ion-ion/ion-dna interactions ***
+*******************************************************
+
+   A water-mediated short-range ion-ion interaction w_sr with a form of
+damped oscillations is incorporated into the primitive model
+(LJ+scaled Coulomb) to take into account the hydration effect.
+
+                     (c1-r)           c3 * (c1-r)
+w_sr (r) = c0 * exp[ ------ ] * cos[ ------------- ] + c4 * [c1/r]**6
+                      (c2)                pi
+
+where r is the interion distance, and c0-c4 are coefficients. Currently,
+this function is applied only up to r = 8 Ang. Two ion types should be
+listed explicitly. The various contributions to the total ion-ion
+interaction energy can be written up to r = 8 Ang. in a separate file
+using a [unit] number. The written four columns are;
+
+{distance}  {total(primitive+w_sr}  {primitive}  {w_sr}
+
+syntax:
+
+  [SRPMF] rth (real)
+  <ion-type> <ion-type> c0 (real) c1 (real) c2 (real) c3 (real) c4 (real) [{file} unit (integer)]
+  END
+
+  <type>               : ion/dna type
+  c0             |0.0| : c0 parameter
+  c1             |0.0| : c1 parameter
+  c2             |0.0| : c2 parameter
+  c3             |0.0| : c3 parameter
+  c4             |0.0| : c4 parameter
+  {file}               : activates writing output of the function
+  unit           | 1 | : unit of the opened file where it will be written
+  rth            |8.0| : Radii threshold. Will compute SRPMF only for distances lower than rth
+
+example:
+
+  SRPMF rth 8.0
+  POT POT c0 -0.60 c1 4.40 c2 0.90 c3 0.80 c4 0.25 file unit 21
+  CLA CLA c0 -0.50 c1 4.90 c2 0.90 c3 0.80 c4 0.25 file unit 22
+  POT CLA c0 -3.70 c1 2.90 c2 0.90 c3 0.75 c4 0.00 file unit 23
+  SOD SOD c0 -0.60 c1 4.40 c2 0.90 c3 0.50 c4 0.40 file unit 21
+  SOD CLA c0 -7.10 c1 2.30 c2 0.90 c3 0.70 c4 0.00 file unit 23
+  END
+
+
+***************************
+*** Effective potential ***
+***************************
+
+   Effective potentials files may be used to compute pairs interaction.
+If a pair effective potential is activated, analytical potentials will
+be ignored for that pair. If SRPMF keyword is used,  EFPOT must be defined
+after this one. X values in the EFPOT function table must be consecutively
+separated by a constant value (deltaX must be constant).
+Effective potentials can be built from analytical potentials. So if "build"
+keyword is used, Coulombinc, LJ and SRPMF (if needed) must be defined.
+
+syntax:
+  [EFPOT] [res (integer)] [scal (real)] [maxdata (integer)] [{write} unit (integer)] [maxdist (real)] [mindist (real)]
+  <type> <type> [[scal (real)] {read} unit (integer)] [{build} [maxdist (real)] [mindist (real)]]
+  END
+
+  <type>               : ion/dna type
+  res            |0.1| : Resolution of the potential tables. Must be the same for all of them.
+  {read}               : Activates pair and reading of potential file
+  unit           | 1 | : File unit number from which potential will be read.
+  scal           |kb*T|: Factor to scale the potential. Useful to convert units. Used in read.
+                         (Default value is k Boltzmann x Temperature [kcal/mol])
+                         If scal in EFPOT line not present uses the default.
+                         If scal in the following lines is not present uses the scal in EFPOT line.
+                         If defined on top will use this value as default for each.
+  {write}              : Activates write out of effective potentials. May be omitted.
+  unit           | 1 | : File unit number to write effective potentials.
+  {build}              : Activates creation of potential from Coulombic, Lennard Jones and SRPMF parameters. Ignored if read is present.
+  mindist        |2.5| : Is the min length distance for the potential. If omitted below uses the
+                         values chosen in line 0. (Used in build)
+  maxdist    |rth/MaxL|: Is the max length distance for the potential. The default value is the max
+                         length of the box or rth if SRPMF is activated.
+                         If omitted below uses the values chosen in line 0. (Used in build)
+  maxdata |maxdist*ntp|: Is the maximum number of total data points that will be stored (includes read and build). ntp is the number of type pairs
+
+example:
+
+  EFPOT res 0.1
+  POT S scal 4.82 read unit 1
+  CLA S scal 2.00 read unit 2
+  POT CLA read unit 3
+  CLA POT build mindist 2.5 maxdist 12.0
+  END
+
+
+**********************
+*** Membrane setup ***
+**********************
+
+   A membrane can be represented by an analytical (polynomial) repulsive 
+potential applied for a switch region [pmemb] between bulk and membrane 
+regions so that the defined membrane region has a potential [amplmemb] to 
+represent an impermeable membrane. In addition, a cylindrical pore with 
+a radius of [radi] can also be setup for each ion type. A similar 
+analytical repulsive potential is applied for a switch region [ppore] between 
+the pore bulk and membrane regions with a potential [amplpore]. By [volt],
+a simplified representation of the voltage can be included. (??? conc/temp)
+
+syntax:
+
+  [MEMBRANE] {pore} thick (real) zmemb (real) epsm (real)
+  <type> pmemb (real) amplmemb (real) [ppore (real) amplpore (real) radi (real)]
+  END
+  
+  {pore}              : Activates the cylindrical pore
+  thick 	|0.0| : thickness of a membrane (Ang.)
+  zmemb 	|0.0| : position of the center of a membrane along the Z-axis (Ang.)
+  epsm          |2.0| : Dielectric constant of the membrane
+  <type>              : ion/dna type 
+  pmemb	        |1.0| : switching region wall width between bulk and membrane regions (Ang.) (located in bulk)
+  amplmemb      |0.0| : repulsive membrane potential (kcal/mol) 
+  ppore         |1.0| : switching region wall width between pore and membrane regions (Ang.) (if pore enabled) (located in membrane)
+  amplpore      |0.0| : repulsive potential for a cylindrical pore (kcal/mol) (if pore enabled)
+  radi 	        |1.0| : radius of a cylindrical pore (if pore enabled)
+
+NOTE: Remember to setup transmembrane potential in SYSTEM and ionic strength
+
+example:
+
+  MEMBRANE pore thick 24.0 zmemb 0.0
+  POT  pmemb 2.0 amplmemb 50.0 ppore 1.0 amplpore 50.0 radi 4.0
+  CLA  pmemb 2.0 amplmemb 50.0 ppore 1.0 amplpore 50.0 radi 4.0
+  END
+
+
+************
+*** GSBP ***
+************
+
+   The influence of a low-dielectric charged channel protein on the movements
+of ions can be incorporated in terms of either the reaction field [mmij] or
+the reaction field parameters [rfpar] arising from various dielectric boundaries,
+the external static field [phix] arising from the charge distribution of a
+channel protein and the transmembrane potential, and the grid-based repulsive
+potential [phiv]. They depend on the structure and charge distribution of a
+channel. One can use the PB/PNP solver to calculate them (see the PB/PNP solver).
+
+   If necessary, different (ion-accessible) grid-based repulsive potentials
+{phiv} can be used for different ions with {nmcden}. The separate (binary)
+files for the ion-accessible space of each ion should be supplied sequentially
+and in the same order as in the particle definition. Also rfparunit reads one
+reaction field parameter [rfpar] file per ion type.  These files have to be
+arranged in the same sequential order (see example 3). Usually, it can be used 
+a single reaction field parameters file for the ion and the counterion. 
+  Repulsion field prevents mobile particles from entering inside the protein region. 
+However, it may happen that an ion crosses this barrier and cannot get outside 
+because there is not repulsion gradient inside the protein to guide the ion back to 
+the solution. To solve this issue several repulsion layers can be generated inside 
+the body. The first repulsion layers is the external surface of the body/proteing. 
+The following layer is the inside surface of this surface and so on. The inner is 
+the layer the higher repulsion value posses so as to generate a repulsion gradient 
+to aid particles come out from inside a body. 
+   Static, repulsion and rfpar maps can be lower than system size except keyword
+"adjust" is being used.
+
+syntax:
+
+  [GSBP] {adjust} {phiv} svdw (real) vzmin (real) vzmax (real) {bspline} {nmcden} phivunit (integer) [thold27 (real)] [thold8 (real)] [repwalls (integer)] -
+         {phix} phixunit (integer) {rfpar} rfparunit (integer,integer,...) [rfparfac (real)] {rfpsingle} -
+         {mmij} mmijunit (integer) xmin (real) ymin (real) zmin (real) xmax (real) ymax (real) zmax (real) [rfscal (real)]
+
+  {adjust}              : Resize static and repulsion field map to the system size to optimize memory usage
+  {phiv}                : Activates repulsion field
+  svdw         |50.0|   : magnitude of grid-based repulsive potential (in kcal/mol)
+  phivunit       |-1|   : unit for ion-accessible space
+  vzmin       | LZ/2|   : maximum position of a grid for phiv along the Z-axis [Ang.]
+  vzmax         |-LZ/2| : minimum position of a grid for phiv along the Z-axis [Ang.]
+  {bspline}             : Is the 2rd-order B-spline interpolation for phiv
+                          (default is trilinear interpolation (faster))
+  {nmcden}              : use different ion-accessible space for different ions
+  thold27        |27.0| : threshold warning for repulsive map for 27 grid cells case (only for debugging purposes)
+  thold8          |8.0| : threshold warning for repulsive map for 8 grid cells case (only for debugging purposes)
+  repwalls        |126| : Repulsion Walls generates different layers of repulsion inside a closed repulsive body to aid
+                          particles to get out from inside a body. The recommended number
+                          of walls depends on the resolution of a map. For a grid of 0.5 Ang, a repwalls=4 would make 2 Ang
+                          of repulsive layers inside the body. The repulsive layer length should be greater than maximum
+                          displacement for BD or MC (bdmax and mcmax) in SIMULATION. A max value of 126 is allowed and activated by default.
+                          There is no performance issue with this keyword and max value is encourage to be used.
+                          Works for trilinear, bspline and nmcden. If it is zero, repwalls is deactivated.
+  {phix}                : Activates static external field
+  phixunit         |-1| : File unit number for static external field
+  {mmij}                : Enables reaction field mmij
+  mmijunit         |-1| : unit for reaction field matrix (MMIJ)
+  xmax,ymax,zmax  |0.0| : maximum positions in XYZ of a region where Legendre polynomial
+                          basis functions are applied for the reaction field calculation
+  xmmin,ymin,zmin |0.0| : minimum positions in XYZ of a region where Legendre polynomial
+                          basis functions are applied for the reaction field calculation
+  rfscal          |1.0| : scaling factor affecting the cross terms of the reaction field
+                          (the bigger rfparfac, the more long range are the cross terms)
+  srdist          |0.0| : Computes the reaction field for a sphere of srdist radius
+  {rfpar}               : Enables Reaction Field Parameters (not compatible with mmij)
+  rfparunit  int,int,...: Unit numbers for each rfpar type. Separate unit numbers by comma or any symbol except space. No default values so cannot be ommited. Unit number order must match the ions order defined in PARTICLE.
+  rfparfac        |1.5| : factor for effective radius parameters
+  {rfpsingle}         : It will read the first map given in rfparunit assuming maps are same for all ions
+
+example 1: one repulsive potential [phiv] for all ion types, static field [phix],
+           and [mmij] reaction field
+
+  open read unit 11 file name phiv.bin
+  open read unit 13 file name phix.bin
+  open read unit 14 file name mmij.bin
+
+  gsbp svdw   50.0 phiv vzmin -35.0 vzmax  35.0 phivunit 11  -
+       phix phixunit 13 mmij mmijunit 14 -
+       xmin  -22.25 ymin  -22.25 zmin  -43.25 -
+       xmax   22.25 ymax   22.25 zmax   43.25
+
+example 2: same repulsive potentials [phiv] for the ion types, static field [phix],
+           and different reaction field parameters for the ion types
+
+  open read unit 11 file name phiv.bin  ! particle
+  open read unit 13 file name phix.bin
+  open read unit 14 file name rfpar_pot.bin   ! particle POT should be defined first
+  open read unit 15 file name rfpar_cla.bin   ! particle CLA should be defined second
+
+  gsbp svdw 50.0 phiv phivunit 11 phix phixunit 13 rfpar rfparunit 14,15
+
+
+Diffusion Models
+=================
+BROMOC posses several diffusion models for simulating ions transport. The simpler is the usage 
+of a constant diffusion coefficient (independent of space and time) for all particles. Other 
+space-dependent models are implemented.
+
+
+********************************************************
+*** PROXDIFF: Diffusivity Dependant on DNA Proximity ***
+********************************************************
+
+In this model, the diffusion coefficient of ions depends on DNA proximity. 
+The diffusivity of ions is constant until they approach a DNA site. According
+to the following relation, the diffusivity is a function of a variable 
+(x: the distance between the ion and the closest DNA site) and three parameters: 
+a bulk diffusivity (Dbulk), a diffusion coefficient of ions at DNA closest 
+proximity (diff0), and a distance at which the diffusivity becomes equal to the 
+bulk diffusivity (beta)
+
+D = Dbulk*(1-(1-diff0/Dbulk)*exp(-x/beta))
+
+Based on J. Phys. Chem. C 2012, 116, 3376-3393
+
+The following keyword can enable diffusion coefficient dependent on DNA proximity.
+The distance between the ion surface to the closes DNA surface (x) is computed as 
+minimum distance between ion and a DNA-Site minus closest proximity distance 
+between ion and DNA-Site. The DNA-Site that minimize this distance is the
+one to be considered. The closest proximity distance is obtained from EFPOT so
+this keyword is only functional when using effective potentials. Dbulk is obtained 
+from diffusivity defined in PARTICLE.
+
+
+syntax:
+
+  [PROXDIFF] diff0 (real) beta (real)
+
+  diff0      | 0.101 | : Diffusion constant at closest proximity of DNA in Ang^2/ps
+  beta       | 2.930 | : Distance between Ion and DNA surface at which Diffusivity equals bulk diffusivity
+  diffcutoff | maxl  | : Distance of cutoff at which diffusion is computed using bulk diffusivity
+                         The default option is maxl is the maximum length that can be found in the system boundaries. 
+                         That means that this keyword is off by default. If cutoff is reduced it may save computing time.
+                         For the default beta, cutoff not recommended to be less than 9.0 Ang. However, there is another
+                         cutoff being applied that is the maximum length of the efpot. If diffcutoff is higher than 
+                         the maximum efpot length, the last is being use, otherwise the first.
+                    
+example:
+
+  PROXDIFF diff0 0.101 beta 2.93 
+
+
+
+**************************************************************************
+*** PROFILE: User defined Diffusion constant profile (space dependent) ***
+**************************************************************************
+
+One can define scaling factor for diffusion constant along Z axis. 
+In this case effective diffusion constant will be evaluated as:
+D*= k*D
+You need to define scaling factor profile along Z. Possible way to roughly estimate such profile is 
+to use hydrodynamic correction for motion of spherical particle inside the tubes of different radii. 
+The channel is considered as a series of cylinders with different radius and you need to have a profile 
+such radii along Z. Scaling factor is defined according to a next formulation:
+
+k = 1/(0.64309+0.00044*exp(ri/(0.06894*Rc))+0.35647*exp(ri/(0.19409*Rc))
+
+,where k is scaling factor for diffusion constant, ri is an ionic radius and Rc is radius of 
+the channel.  You may specify one profile for both ion because minor differences in ionic radius 
+does not affect your results a lot or you may use average radius between 2 ions. Profile file 
+should contain 2 columns 1-st with Z value and 2-nd with scaling factor. Given profile will be 
+fitted to continuous function therefore it make sense to reduce number of insignificant 
+extrema to make your initial function smooth and improve quality of fitting.
+
+syntax:
+
+  [PROFILE] difunit (integer)
+
+  difunit      | 1 | : File unit number where the difusion profile is.
+
+example:
+
+  open read unit 10 name dif.dat
+  PROFILE difunit 10
+  close unit 10
+  
+  dif.dat:
+  -85     1.0
+  -60     0.75
+  0       0.30
+  60      0.75
+  85      1.0
+
+
+****************************************************************
+*** DIFFUSION: Pore-position dependent diffusion coefficient ***
+****************************************************************
+   A virtual cylindrical pore can be delimited with walls where ions diffusivity 
+posses bulk value far from the pore boundaries along the z-axis. Inside the walls 
+the diffusivity is scaled using a polynomial function until it reaches the inside 
+of the pore where the diffusivity has inner pore value. Pore length and Pore Center 
+must be defined and for each ion type, a wall pore length and a diffusivity scaling 
+factor for the inner pore section needs to be specified. 
+
+
+syntax:
+  [DIFFUSION] porelength (real) pcenter (real)
+  <ion-type> lowfraction (real) switchlength (real) [{file} unit (integer)]
+  END
+  
+  porelength      |0.0| : pore length in Ang.
+  pcenter         |0.0| : pore center position in Ang.
+  <ion-type>            : ion type (should be defined in Particle definition, see above)
+  lowfraction     |0.0| : diffusivity scaling factor for the inner pore section 
+  switchlength    |1.0| : wall pore lDiffusion Models
+BROMOC posses several diffusion models for simulating ions transport. The simpler is the usage of a constant diffusion coefficient (independent of space and time) for all particles. Other space-dependent models are implemented.
+ength in Ang
+  {file}                : Activates writing to file
+  unit            | 1 | : File unit number to save results
+
+
+
+***********************************************************
+*** SIMULATION: GCMC/BD simulation and Monte Carlo Move ***
+***********************************************************
+
+   A variety of options can be setup to generate a trajectory of ions by Brownian dynamics (BD) and Monte Carlo (MC) method. Gran Canonical Monte Carlo (GCMC) can be used jointly with either method. General number of cycles can be defined that incorporate predefined cycle numbers of BD, MC and GCMC.
+The total energy or nonbond energy can be turned off by specifying [noenergy] or [nononbond]. One cycle defined by [ncycle] can incorporate several cycles of BD, MC, GCMC.
+
+   One can create a trajectory (binary) file which is read by the visualization program DINO (http://www.dino3d.org). 
+
+   A simple analysis can be done on the fly for computation of:
+(1) average probability distribution of number of ions in the system and channel inside [prob],
+(2) average density profile along the Z-axis [rho] and
+(3) radial distribution of ions from a specific position [g(r)].
+(4) fraction of unpaired bases
+(5) energy profile along z-axis
+(6) translocation times of DNA
+(7) ions density (Charge Density)
+
+Gran Canonical Monte Carlo (GCMC)
+This procedure consists of constructing a random walk (discrete time Markov chain) of the conﬁguration of the system during which particle creation and destruction can occur allowing for constant electro-chemical potential of the simulated system[Im, W.; Seefeld, S.; Roux, B. Biophys. J. 2000, 79, 788].  GCMC algorithm can be used to simulate equilibrium as well as non-equilibrium conditions of ion diffusion and permeation under applied electric potential.[cite bromoc paper] Buffers section must be defined to use GCMC.
+
+Brownian Dynamics (BD)
+The approach consists in generating the trajectory of the particles as a function of time by numerically integrating stochastic equation of motions by calculating the microscopic forces acting on mobile particles in the system. In the case of wide aqueous pores, a continuum electrostatic description in which the solvent is represented by a featureless dielectric medium is often useful and accurate approximation. Thus equation of motion governing dynamics of the system is a specific form of general Langevin equation [Ermak, D. L.; Mccammon, J. A. J. Chem. Phys. 1978, 69, 1352.] which depends on particles diffusivity, diffusivity gradients, temperature, forces and a Gaussian random noise function.[Ref. 4] BD moves if coupled with the GCMC procedure yield the so-called GCMC/BD scheme allowing the simulation of a ﬂuctuating number of particles.
+
+Monte Carlo Move (MCM)
+This option allows the movement of mobile particles using a low-computational cost (fast) technique by moving ions based on Metropolis Monte-Carlo (MMC) algorithm (J. Chem. Phys. 21,1087, 1953). MCM generates a particle configuration consistent with Boltzmann probability distribution at the given temperature and in the working system. MCM, instead of computing the microscopic forces, obtains the energy change for a given random move and accept it or discard it according to the MMC criteria. 
+syntax:
+
+
+  SIMULATION ncycle (integer) ngcmc (integer) nmcm (integer) mcmax (real) -
+             nbd (integer) dt (real) nprint (integer) bdmax (real) -
+             {noenergy} {nononbond} {nobond} {rhDNA} -    
+             {traject} iuntrj (integer) nsave (integer) {trajcont} [setframes (integer)] -
+             {prob} czmin (real) czmax (real) {rho} {rdf} xgr (real) ygr (real) zgr (real) -
+             {ionpair} nanal (integer) {enerprofile} -
+             {countions} [iuncnt (integer) svcntfq (integer) zcont (real),(real),... ]
+             {denatured} nsfbs (integer) vfbs (real) iunfbs (integer) -
+             {translocation} unitn (integer) ntras (integer) -
+             {security} units (integer) nsec (integer) {chden}
+            
+  ncycle            |0| : number of steps for general cycle that includes GCMC, BD and MC simulations
+  ngcmc             |0| : number of steps for GCMC (Gran Canonical Monte Carlo)
+  nmcm              |0| : number of steps for MC (Monte Carlo) move
+  mcmax           |0.5| : maximum displacement for MC
+  nbd               |0| : number of steps for BD (Brownian Dynamics)
+  bdmax           |1.0| : maximum displacement for BD
+  dt 	         |0.02| : time-step for BD [ps]
+  {noenergy}            : turns off total energy
+  {nononbond}           : turns off nonbond energy
+  {nobond}              : turns off bond energy
+  nprint            |0| : Print frequency for energy and number of ions
+  {traject}             : Enables write trajectory
+  iuntrj           |-1| : Unit number of a trajectory file
+  nsave        |ncycle| : Trajectory saving frequency
+  {trajcont}            : Enables continuation of trajectory. Does not write header again. 
+                          Useful to concatenate several SIMULATION to same trajectory file.
+  setframes         |0| : If trajcont is going to be used, use setframes to set the total final number of frames.
+  {countions}           : Enables ions counting / current computation
+  iuncnt            |0| : Unit number for ion count/currents external file
+  svcntfq      |nprint| : Saving Frequency in units of BD steps for cross ion counting
+  zcont   real,real,... : Z-positions where the number of crossing ions are counted. 
+                          Separate numbers by comma or other symbol (exceptions: space, numbers, "d", "e" or dot). 
+                          No default values so cannot be ommited.
+  {prob}                : print various average probability distributions
+  czmin           |0.0| : a minimum position of a channel along the Z-axis [Ang.] 
+                          (for {prob} and {translocation} if necessary)
+  czmax           |0.0| : a maximum position of a channel along the Z-axis [Ang.] 
+                          (for {prob} and {translocation} if necessary)
+  {rho}                 : print an average density profile along the Z-axis for ions
+  {rhDNA}               : print an average density profile along the Z-axis for DNA
+  {rdf}                 : print a radial distribution function centered at (xgr,ygr,zgr)
+  xgr             |0.0| : x-reference for rdf
+  ygr             |0.0| : y-reference for rdf
+  zgr             |0.0| : z-reference for rdf
+  {ionpair}             : Turns on Ion pairing analysis
+  nanal           | 1 | : Ion pairing analysis frequency
+  {enerprofile}         : Turns on computation of energy profile along z-axis
+  {denatured}           : Turns on computation of fraction of unpaired bases
+  nsfbs        |ncycle| : Fraction of unpaired bases saving frequency
+  vfbs          | 0.0 | : Initial time for calculating fraction of unpaired bases
+  iunfbs          | 1 | : Unit number to write fraction of unpaired bases output
+  {translocation}       : Turns on computation of translocation duration for DNA
+  unitn           | 1 | : Unit number to write translocation duration output
+  ntras           | 1 | : Translocation saving frequency
+  {security}            : Turns on Security output file which contains coordinates and seed numbers
+  units           | 1 | : Unit number to write security output
+  nsec            | 1 | : Security file saving frequency
+  {chden}               : Enables counting of ion during simulation to compute Charge Densities (see CHDEN)
+
+Comments:
+Count ions output explanation:
+
+- In brackets is repeated for each counter in the order stablished in zcont
+IONAME    Ion Name
+IBD       Actual number of BD steps
+Time      Actual time in ps
+ncont     Total Number of Ions of this type
+zcont     Position of each Counter
+iforw     Number of Ions going forward (up towards positive z numbers)
+iback     Number of Ions going backward (down towards negative z numbers)
+icurr     Instaneous current in pA counted each "svcntfq" period 
+acurr     Average current in pA
+
+IONAME | IBD | Time | ncont ( | zcont | iforw | iback | icurr | acurr )
+TOT    | IBD | Time ( | zcont | icurr | acurr )
+
+
+example 1: BD simulation
+
+  SIMULATION ncycle 60000000 ngcmc 1 nmcm 0 mcmax 0.0 nbd 1 dt 0.015 nprint 100000 
+
+example 2: MC simulation
+
+  SIMULATION ncycle    20000 ngcmc 10 nmcm 50 mcmax 2.0 nbd 0 dt 0.01 g(r) nprint 1000
+
+
+************
+*** SVDW ***
+************
+  SVDW used within GSBP is a general scalar factor for grid-based repulsive potential. This keyword 
+when used in the main tree of the input, defines a SVDW factor for each type.
+
+
+  syntax:
+
+  [SVDW]
+  <type> scale (real)
+  END
+
+  <type>                : ion/dna type. Ion type (must be same as defined in PARTICLE section, see above)
+                          if dna fragment, available types are: P S Ab Cb Gb Tb
+  scale           |1.0| : scalar factor for <type> by which to multiply SVDW constant (as defined in GSBP)
+
+
+  example:
+
+  SVDW
+  POT  scale 1.0
+  CLA  scale 0.8
+  END
+
+*****************************
+*** CHDEN: Charge Density ***
+*****************************
+
+   Enables calculation of charge density in simulation.
+With this keyword you define the properties of the map to be saved.
+Then use chden keywords in SIMUL to enable counting of ions and in
+PRINT to save density to file. Ouput is in CHARMM PBEQ Binary Potential Map format.
+
+syntax:
+
+   CHDEN [dcel (real)] [xbcen (real)] [ybcen (real)] [zbcen (real)] [nclx (integer)] [ncly (integer)] [nclz (integer)] {norm}
+
+  dcel             |0.5| : Grid spacing in Ang
+  xbcen             |cx| : Center of box in X (Ang). Default is the x center of box defined in SYSTEM.
+  ybcen             |cy| : Center of box in Y (Ang). Default is the x center of box defined in SYSTEM.
+  zbcen             |cz| : Center of box in Z (Ang). Default is the x center of box defined in SYSTEM.
+  nclx       |lx/dcel+1| : Number of grid point in X. Default is calculated from system box dimension in SYSTEM.
+  ncly       |ly/dcel+1| : Number of grid point in Y. Default is calculated from system box dimension in SYSTEM.
+  nclz       |lz/dcel+1| : Number of grid point in Z. Default is calculated from system box dimension in SYSTEM.
+  {norm}                 : Enables normalization of the total charge to 0
+
+example:
+
+CHDEN dcel 0.2
+
+SIMUL ncycle 10000 nbd 1 dt 0.01 nprint 100 chden
+
+OPEN write unit 1 file name chden.pbeq
+
+PRINT chden unit 1
+
+CLOSE unit 1
+
+
+
+******************************************************************************
+*** ENERGY & INTERACTION: Total energy and Interaction energy calculations ***
+******************************************************************************
+
+   The program allows one to calculate the total energy and the 
+interaction energy separately. Various energy terms can be added or 
+removed for the calculations.
+
+syntax:
+
+ENERGY {noenergy} {nononbond} {nomembrane} {mmij} {phix} {phiv} {srpmf} {rfpar}
+
+INTERACTION atom (integer) {noenergy} {nononbond} {nomembrane} {mmij} {phix} {phiv} {srpmf} {rfpar}
+
+atom         |1| : atom number
+{noenergy}       : turn off total energy
+{nononbond}      : turn off nonbond energy
+{nomembrane}     : turn off membrane repulsive energy
+{mmij}           : include the reaction field energy 
+{phix}           : include the external static field energy 
+{phiv}           : include the grid-based repulsive energy
+{srpmf}          : include the schort-range ion-ion interaction energy 
+{rfpar}          : include the reaction field parameter energy 
+                   (do not use {rfpar} together with {mmij})  
+
+example:
+
+  open read unit 15 name ../conf_111/crd@1
+  coor read unit 15 CHARMM
+  
+  energy mmij nononbond
+
+
+
+*******************
+*** COORDINATES ***
+*******************
+
+ This keyword generates initial coordinates for ions and DNA. It can also read a file with initial coordinates for DNA and ions, fix ion positions, and rotate and translate DNA. 
+COOR gener/read must be called at least once before SIMUL/ENER/INTER and after PARTICLES/NUCLEOTIDES. 
+A CHARMM coordinate file can be read by specifying [CHARMM] otherwise will use the default format 
+(see PRINT below). Can be called several times.
+
+syntax: 
+  The following cases cannot be used together in a same line.
+
+  * case 1:
+  COOR fixion nfix (integer)
+  <ion-type> [xcor (real)] [ycor (real)] [zcor (real)]
+  END
+
+  <ion-type>            : ion type (should be less than 4 characters)
+  nfix            [ 0 ] : fix first nfix number of ions. 
+                          The first default is 0, the second is previous nfix.
+  xcor            [0.0] : set x fixed position
+  ycor            [0.0] : set y fixed position
+  zcor            [0.0] : set z fixed position
+
+
+  COOR gener [all] [dna] [ions]  [nfix (integer)]
+  gener       : generates DNA and/or ions initial position
+  all         : generates DNA and ions (if this is not present dna and/or ions must be present)
+  dna         : generates DNA (useful when reading only ions)
+  ions        : generates ions (useful when reading only DNA)
+  nfix  [ 0 ] : fix first nfix number of generated ions
+                The first default is 0, the second is previous nfix.
+
+  * case 2:
+  COOR tras [xtras (real)] [ytras (real)] [ztras (real)]
+
+  tras        : activates DNA translation vector defined by xtras ytras ztras
+
+  * case 3:
+  COOR rot [r11 (real) r12 (real) r13 (real) r21 (real) r22 (real) -
+           r23 (real) r31 (real) r32 (real) r33 (real)] -
+           [ref s1 (integer) s2 (integer) s3 (integer)]
+
+  rot         : activates DNA rotational matrix defined by r11 r12 r13 ... r33 (default is unity matrix)
+                or reference s1 s2 s3
+  s1      [1] : DNA site 1
+  s2 [nsites] : DNA site 2
+  s3      [2] : DNA site 3
+  ref         : activates other way to define rotation where DNA is rotated to 
+                align site1-site2 along z axis and site2-site3 to x axis
+
+  * case 4:
+  COOR read unit (integer) [CHARMM] nfix (integer)
+
+  read        : read DNA and ions initial position
+  nfix  [ 0 ] : fix first nfix number of read ions
+                The first default is 0, the second is previous nfix.
+
+  * case 5:
+  COOR setori [x (real)] [y (real)] [z (real)]
+  
+  setori         : move DNA geometric center to x y z
+  x        |cur| : x position, if omitted it doesn't move
+  y        |cur| : y position, if omitted it doesn't move
+  z        |cur| : z position, if omitted it doesn't move
+
+
+example1: coor gener 
+
+example2: open read unit 12 name ions.crd
+          coor read unit 12 CHARMM
+          close unit 12
+
+
+
+************
+*** OPEN ***
+************
+
+Opens a file for reading/writing. A Formatted file (text) is the default.
+{file} should be issued for a Unformatted file (binary).
+
+syntax: 
+
+  [OPEN] {read/write} unit (integer) {file} name (string)
+
+  {file}                 : Specifies that the file will be open as binary. Otherwise it will be as text.
+  {read}                 : opens the file for reading only
+  {write}                : opens the file for writing. Will override if file already exists.
+  unit             | 1 | : File unit number
+  name    | no default | : name of the file that will be open
+
+
+*************
+*** CLOSE ***
+*************
+
+Close opened unit file
+
+syntax: 
+  [CLOSE] unit (integer)     
+
+
+*************
+*** PRINT ***
+*************
+
+  Prints a coordinate file and other information. The supported coordinate file formats are BCO (BROMOC Coordinates), XYZ, PDB or CHARMM. Other information that can print include system information; input title; iseed number; DNA geometric center; charge density and electric field in CHARMM PBEQ Binary Potential Map format; and finally static field, repulsion field and reaction field values along a defined vector.
+If none of above format is specified it will use the default format. Default format is BCO. BCO and CHARMM format can be read as input under COOR read.
+
+syntax:
+  The following cases cannot be used combined.
+ 
+  Prints system information:
+        [PRINT] {system} 
+
+  Prints coordinates:
+        [PRINT] {coor} unit (integer) [XYZ/PDB/CHARMM] 
+
+  Prints title:
+        [PRINT] {title} 
+
+  Prints iseed number:
+        [PRINT] {iseed}
+
+  Prints dna geometric center
+        [PRINT] {dnacenter}
+
+  Prints static field values from (x1,y1,z1) to (x2,y2,z2) with resolution (res) in file (unit)
+        [PRINT] {static} {noheader} unit (integer) res (real) x1 (real) y1 (real) z1 (real) x2 (real) y2 (real) z2 (real)
+
+  Prints repulsion field values from (x1,y1,z1) to (x2,y2,z2) with resolution (res) in file (unit)
+        [PRINT] {repul} {noheader} unit (integer) res (real) x1 (real) y1 (real) z1 (real) x2 (real) y2 (real) z2 (real)
+
+  Prints reaction field parameter values from (x1,y1,z1) to (x2,y2,z2) with resolution (res) in file (unit) for all defined ion types
+        [PRINT] {rfpar} {noheader} unit (integer) res (real) x1 (real) y1 (real) z1 (real) x2 (real) y2 (real) z2 (real)
+  
+  Prints charge density (in electron charge per cubic Angstrom) in pbeq format (see CHDEN keyword for more info of how to use)
+        [PRINT] chden unit (integer)
+ 
+  Prints electric field in Volt/Ang in 4 pbeq format files with the x,y,z component of the electric field and its module.
+  Electric field from static field or membrane included if any. Keyword CHDEN must be defined. To print electric field from static field or membrane
+  and not from charge density do not use keyword chden in SIMUL. To print electric field only from charge density use "onlychden".
+        [PRINT] efield {onlychden} xunit (integer) yunit (integer) zunit (integer) munit (integer)
+
+  Prints cavity surface along z-axis and average static field in that cavity section
+        [PRINT] statsup x (real) y (real) unit (integer)
+ 
+  Prints static field values in x,y,z,pot format in an ASCII file. Allows to generate 3D,2D,1D Plots.
+        [PRINT] statxd unit (integer) {noheader} ix1 (integer) ix2 (integer) iy1 (integer) iy2 (integer) iz1 (integer) iz2 (integer)
+
+  Prints repulsion field values in x,y,z,rep format in an ASCII file. Allows to generate 3D,2D,1D Plots.
+        [PRINT] repxd unit (integer) {noheader} ix1 (integer) ix2 (integer) iy1 (integer) iy2 (integer) iz1 (integer) iz2 (integer)
+
+
+example1: print syst
+
+example2: 
+         open write unit 12 name ions.crd
+         print coor unit 12 PDB
+         close unit 12
+
+example3:  
+         open write unit 1 name sfield.dat
+         PRINT unit 1 res 0.1 x1 0.0 y1 0.0 z1 10.0 x2 0.0 y2 0.0 z1 -10.0
+         close unit 1
+
+example4:
+         OPEN write unit 1 name statsup.dat
+         PRINT unit 1 x 0.0 y 0.0
+         CLOSE unit 1
+
+
+*************
+*** COUNT ***
+*************
+
+Count all the particles and assign them to their appropriate buffer.
+
+syntax: [COUNT]
+
+
+************
+*** TEST ***
+************
+
+Compare the analytical forces with the finite-difference forces
+
+syntax: 
+  [TEST] [noenergy] [nononbond] [nomembrane] [mmij] [phix] [phiv] [srpmf] [qrep] [rfpar] 
+
+
+****************
+*** COMMENTS ***
+****************
+
+Comments can be added by using at the begging of the line the symbols "# * !" followed by a space.
+
+examples:
+
+* Comment
+# Comment
+! Comment
+
+
+************
+*** EXIT ***
+************
+
+Exit the program.
+
+syntax: 
+  EXIT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

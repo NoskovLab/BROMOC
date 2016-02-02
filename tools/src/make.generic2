@@ -1,0 +1,14 @@
+#!/bin/bash
+pname=$(basename $(echo $1 | sed 's/\(.*\)\..*/\1/' ))
+if [ "$2" == "intel" ]; then
+  icc -lrbc -c libxdrf.c  
+  ifort -ip -O3 -xHost -o $pname $3 libxdrf.o $pname.f90
+else
+  gcc -c libxdrf.c 
+  gfortran -O3 -march=native -ffree-line-length-none -o $pname $3 libxdrf.o $pname.f90
+fi
+rm -f *.mod libxdrf.o
+mv  $pname ../bin
+rm -f ../../bin/$pname
+ln -s ../tools/bin/$pname ../../bin/$pname
+

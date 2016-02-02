@@ -1,0 +1,19 @@
+#!/bin/bash
+#this program convert imc-macro potential to a xmgraceable file
+#USAGE: ./imcpot2xmg inputfilename outputfilename numberofdatapoints numberofspecies 
+filein=$1  #imc input file 
+fileout=$2 #data output file
+num=$3   #numero de puntos
+sp=$4    #numero de especies
+lns=$((($(cat $filein | wc -l)-1) / $num))
+sed -n '2,'$(($num+1))'p' $filein | awk '{print $1"   "$2}' > 'tmp1'
+files=tmp1
+for ((  i = 2 ; i <= $lns ;  i++  )); do
+  nn1=$(($i*$num-$num+2))
+  nn2=$(($i*$num+1))
+  sed -n $nn1','$nn2'p' $filein | awk '{print "   "$2}' > 'tmp'$i
+  files=$files' tmp'$i
+done
+paste $files > $fileout
+rm -f $files
+

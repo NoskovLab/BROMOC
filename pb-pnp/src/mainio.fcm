@@ -1,0 +1,9 @@
+!-------------------------------------------------------------------------
+!                  Input-Output common block
+!-------------------------------------------------------------------------
+      integer*4 inpu,outu,iuntrj
+      common /ioblck / inpu,outu,iuntrj
+
+      character*7 frmt
+      common /ioblc2 / frmt
+

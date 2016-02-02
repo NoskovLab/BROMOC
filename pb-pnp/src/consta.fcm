@@ -1,0 +1,32 @@
+! Physical constants from NIST 2010 (physics.nist.gov)
+      real*8     pi
+      parameter (pi=3.14159265358979323846264338327950288419716939937
+     .510d0)
+      real*8     twopi
+      parameter (twopi=2d0*pi)
+      real*8     kboltz
+      parameter (kboltz=1.380648813d-23)
+      real*8     angstrom
+      parameter (angstrom=1.0d-10)
+      real*8     amu
+      parameter (amu=1.66053892029d-27)
+      real*8     liter
+      parameter (liter=0.001d0)
+      real*8     avogadro
+      parameter (avogadro=6.0221412927d23) 
+      real*8     kcal,           kcalmol
+      parameter (kcal=4184.0d0, kcalmol=kcal/avogadro)
+      real*8     psec,         fsec
+      parameter (psec=1.0d-12, fsec=1.0d-15)
+      real*8     pico
+      parameter (pico=1.0d-12)
+      real*8     Coulomb
+      parameter (Coulomb=1.60217656535d-19)
+      real*8    eps0
+      parameter (eps0=8.854187817620d-12) ! Uncertainty last 2 digits. 2006 CODATA NIST in [F/m (=C^2/Jm)]
+      real*8    celec
+      parameter (celec = Coulomb**2/(4.0d0*pi*eps0*kcalmol*angstrom))
+      real*8    cdie
+      parameter (cdie = 80.0d0)
+      real*8    rsmall
+      parameter (rsmall = 1.0d-4)

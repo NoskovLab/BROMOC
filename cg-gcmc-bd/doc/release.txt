@@ -1,0 +1,218 @@
+BROMOC (CG-GCMC-BD): ELECTRODIFFUSION, BROWNIAN DYNAMICS AND COARSE GRAIN MODEL DNA SIMULATION PROGRAM
+(c) 2010 S. Y. Noskov,    University of Calgary
+(c) 2010 C. J. F. Solano, University of Calgary
+(c) 2011 P. M. De Biase,  University of Calgary
+
+What's new in version 4.11 (2014.12.15) ?
+-New BROMOC Tool XS-SURF to compute cross-section surface of the inner pore with and without DNA
+
+What's new in version 4.10 (2014.10.14) ?
+-New feature to print static field and repulsion field in x,y,z,val format in an ASCII file
+
+What's new in version 4.04 (2014.08.20) ?
+-New terms added to the previously added feature
+
+What's new in version 4.03 (2014.08.11) ?
+-New feature to compute pore area and average static field
+
+What's new in version 4.02 (2014.05.20) ?
+-Bug fixed in rfpar
+
+What's new in version 4.01 (2014.02.18) ?
+-Bug fixed in afact
+
+What's new in version 4.00 (2013.05.14) ?
+-BROMOC Parallelized with OpenMP (single node, multiple processors)
+
+What's new in version 3.97 (2013.04.23) ?
+-DNA Temperature can be set independently. Now Ions and DNA temperature can be different.
+DNA Diffusivity is readjusted proportionally to the Temperature. Temperature dependence of DNA kappa and afact is not affected (only for membrane).
+-Bug fixed in static0
+
+What's new in version 3.96 (2013.04.16) ?
+-New DNA structural parameters. Now DNA bases are centered at geometric center of non-hydrogen atoms. 
+ This is the default option its name is charmmwatbc
+
+What's new in version 3.95 (2013.03.18) ?
+-Tail function in EFPOT fixed (coulombic term readded)
+
+What's new in version 3.90 (2013.03.04) ?
+-Fixed glitch in total current output when two sites present
+
+What's new in version 3.89 (2013.02.15) ?
+-Undone changes in 3.88 about MC due to performance issues
+
+What's new in version 3.88 (2013.02.11) ?
+-Fixed bug in printing energy for MC 
+-Add number of total ions printing
+-Increase energies variable to real16 to fix MC bug when system is too big.
+
+What's new in version 3.87 (2013.01.28) ?
+-Fixed bug in output of total current
+
+What's new in version 3.86 (2013.01.02) ?
+-norm keyword implemented in chden
+-Able to print electric field
+
+What's new in version 3.85 (2012.12.27) ?
+-chden implemented to compute charge densities
+
+What's new in version 3.81 (2012.12.25) ?
+-Now Qdebyhyb implemented for cylindrical and spherical systems
+
+What's new in version 3.80 (2012.12.21) ?
+-DNA Proximity Diffusivity implemented "PROXDIFF" keyword
+
+What's new in version 3.73 (2012.12.19) ?
+-New keyword unsplit introduced in CONTRA
+-New keyword scalepairing in NUCLE
+
+What's new in version 3.72 (2012.12.17) ?
+-Bug fixed regarding only ions simulations that showed up after changes in 3.71
+-Warning fixed regarding real*16 to real*8 conversion
+
+What's new in version 3.71 (2012.12.14) ?
+-Bug fixed regarding DNA limits
+-Bug fixed regarding ions counting
+-Number of fixed arrays reduced
+-Reduced number of total atoms from 30000 to 23000
+-charmmwat now default DNA structural parameters
+
+What's new in version 3.70 (2012.11.25) ?
+-New geometric system: Elliptical Cylinder
+-Keywords (in SIMUL) nmove, ngrand, nstep replaced by nmcm, ngcmc, nbd
+-New keywords for NUCLEO: charmmvac and charmmwat. New DNA structural parameters.
+
+What's new in version 3.65 (2012.11.20) ?
+-New way of computing current/counting ions
+-Multiple point for ion counting implemented
+-Saves currents/counted ions to a external file (not to output anymore)
+
+What's new in version 3.60 (2012.11.02) ?
+-DNA Limits extended to 1000 nucleotides
+-Now DNA is read and written in 5' to 3' direction
+-new keyword for nucleotides "3-5" to write from 3 to 5 prime
+-Arbitrary Second strand writing keyword "explicit2nd"
+-Allows Manually input for DNA structure parameters "inputparam"
+-Allows the inclusion of first 5' P by using keyword "keepfirstP"
+
+What's new in version 3.52 (2012.09.29) ?
+-runtime units now in ps (before ns)
+-repwalls now implemented for bspline and nmcden
+-repwalls default is now 126
+-diffusion output file now goes from -90 to 90 (before was from -9 to 9)
+
+What's new in version 3.51 (2012.09.28) ?
+-New keyword repwalls (in GSBP). Repulsion Walls generates different layers of repulsion inside a closed repulsive body to aid
+particles to get out from inside a body. 
+
+What's new in version 3.50 (2012.09.26) ?
+-Bug fixed. Forces in EFPOT were not exactly the derivative of the potential.
+
+What's new in version 3.44 (2012.09.24) ?
+-Bug fixed in coor gener. Variables not initialized were causing problems when recalling gener.
+
+What's new in version 3.43 (2012.09.17) ?
+-Fix mapsplot to use boundaries as in other routines 
+
+What's new in version 3.42 (2012.09.09) ?
+-Weird possible bug fixed in shell_simul where moving cx,cy,cz reading in the code
+ produces a different results.
+-rearrangement in seval functions due error in strict complitation
+
+What's new in version 3.41 (2012.08.28) ?
+-Change adjust to use additional points for outside 
+ boundaries for the correct calculation of forces
+
+What's new in version 3.40 (2012.08.27) ?
+-DEBYHYB keyword introduced into SYSTEM
+
+What's new in version 3.38 (2012.08.24) ?
+-Bug fixed in boundaries in a different way
+
+What's new in version 3.37 (2012.08.22) ?
+-Bug fixed in getfirst i variable was not initialized
+-Bug fixed in boundaries. Now the upper limits of system box is not part of the system.
+-I found a bug that may produce problems when using repulsion field with spline if map is smaller than system box
+
+What's new in version 3.36 (2012.08.21) ?
+-bug fixed in calculation of maxdata
+
+What's new in version 3.35 (2012.08.03) ?
+-trilinear now it is the default option, bspline is optional for phiv
+-now it will be able to read single rfpar map by using keyword rfpsingle in gsbp
+-bug fixed when using rfpar and adjust
+
+What's new in version 3.34 (2012.07.29) ?
+-rfparplot added
+
+What's new in version 3.33 (2012.07.28) ?
+-Important bugs fixed at adjust
+
+What's new in version 3.32 (2012.07.25) ?
+-More Bugs fixed and warning is added if no potentials are defined
+
+What's new in version 3.31 (2012.07.23) ?
+-Bug fixed on adjust and maps reading
+
+What's new in version 3.30 (2012.07.18) ?
+-Center of System Box and Sphere can be defined
+
+What's new in version 3.24 (2012.07.17) ?
+-bmc format changed. More figures and digits added to output format and free format for reading
+
+What's new in version 3.23 (2012.07.09) ?
+-ncycle now it is an integer8
+
+What's new in version 3.22 (2012.07.06) ?
+-Keywords x, y & z included in CONSTRAIN
+
+What's new in version 3.21 (2012.07.04) ?
+-New keyword "trajcont" and "setframes" included in SIMULATION
+
+What's new in version 3.20 (2012.06.27) ?
+-New Character Manipulation library. Now keywords must match exactly as described in the manual (case insensitive)
+
+What's new in version 3.15 (2012.06.14) ?
+-NEW CONTRA section. Now it is possible to constrain translation of DNA sites and DNA centroid
+-Effective potentials data for kcl polyA-kcl polyC-kcl polyG-kcl polyT-kcl genericDNA-kcl released
+-MU for KCl released (inside efpot dir)
+
+What's new in version 3.14 (2012.06.13) ?
+-Now static, repulsion rfpar maps can be smaller than system size
+
+What's new in version 3.13 (2012.05.18) ?
+-Now DNA can be allowed to be outside the system box
+
+What's new in version 3.12 (2012.05.10) ?
+-Effective potentials modified.
+
+What's new in version 3.11 (2012.04.16) ?
+-fixed bugs in rfpar
+-fixed bug in print dnacenter
+-fixed bug in warnings 
+
+What's new in version 3.10 (2012.04.12) ?
+-rfpar implemented
+-Removed reaction field calculation for DNA. Now DNA is ignored. Previously It was not well defined.
+
+What's new in version 3.00 (2012.03.30) ?
+-Effective Potential scheme changed. Now do not shift potential.
+ This new implementation was not tested. It may need adjustment.
+ It may need another term for the analytical potential tail to 
+ fit the derivative of the function as well as the underived table.
+
+What's new in version 2.99 (2012.03.15) ?
+-CONTRANS keyword
+-NOTRANS keyword
+-Membrane and pore bugs fixed
+-Warning overlaps improved
+-Bug in APFORCE fixed
+
+What's new in version 2.98 (2012.02.28) ?
+
+-Membrane and pore bugs fixed
+-keyword in SIMUL dmove changed by mcmax
+-introduced a new keyword in SIMUl: bdmax (same as mcmax but for bd)
+-tested for single and double precision
+

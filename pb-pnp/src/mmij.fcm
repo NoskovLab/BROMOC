@@ -1,0 +1,26 @@
+!     COMMON BLOCK FOR THE REACTION FIELD MATRIX
+
+      integer*4   dxnpol,dynpol,dznpol,dntpol,dntpol2
+      PARAMETER ( dxnpol=10, dynpol=10, dznpol=10)
+      PARAMETER ( dntpol=dxnpol*dynpol*dznpol )
+      PARAMETER ( dntpol2=dntpol*dntpol )
+
+      integer*4 LSTPOL(dntpol),LSTPX(dntpol),LSTPY(dntpol),LSTPZ(dntpol)
+      integer*4 NTPOL,XNPOL,YNPOL,ZNPOL
+
+      COMMON / MMIJ0 /  LSTPOL, LSTPX, LSTPY, LSTPZ,
+     $                  NTPOL, XNPOL, YNPOL, ZNPOL
+
+      REAL*8    COEF(dntpol),BNORM(dntpol),MQ(dntpol)
+      REAL*8    MIJ(dntpol2),MMIJ(dntpol2)
+      REAL*8    SIJ(dntpol,dntpol),SIJEVEC(dntpol,dntpol)
+      REAL*8    SIJEVAL(dntpol),TMPWORK(dntpol)
+      REAL*8    RBXMIN,RBYMIN,RBZMIN,RBXMAX,RBYMAX,RBZMAX
+      REAL*8    SRCUT,TOLSIJ,CGSCAL
+
+      COMMON / MMIJ1 /  COEF, BNORM, MQ,
+     $                  MIJ, MMIJ,
+     $                  SIJ, SIJEVEC, SIJEVAL, TMPWORK,
+     $                  RBXMIN, RBYMIN, RBZMIN, RBXMAX, RBYMAX, RBZMAX,
+     $                  SRCUT, TOLSIJ, CGSCAL
+

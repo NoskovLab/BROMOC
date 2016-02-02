@@ -1,0 +1,14 @@
+#!/bin/bash
+for i in *.make ; do
+  echo $i | sed 's/\(.*\)\..*/\1/'
+  ./$i $1
+done
+this=$PWD
+cd ../../bin
+for i in ../tools/scripts/*; do
+  name=$(basename $i)
+  echo $i
+  if [ -e $name ]; then rm $name; fi 
+  ln -s $i
+done
+cd $this

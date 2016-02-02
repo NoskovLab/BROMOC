@@ -1,0 +1,11 @@
+#!/bin/bash
+this=$PWD
+cd ../../bin
+for i in ../imc-macro/scripts/*; do
+  name=$(basename $i)
+  echo $i
+  if [ -e $name ]; then rm $name; fi
+  ln -s $i
+done
+cd $this
+

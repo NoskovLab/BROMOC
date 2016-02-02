@@ -1,0 +1,22 @@
+#!/bin/bash
+k=${1:?"Number to print missing"}
+j=${2:?"Number of digits missing"}
+fin=1
+h=1
+dig=0
+while [ $fin -eq 1 ]; do
+  if [ $k -lt $((10**$h)) ]; then
+    fin=2
+    dig=$h
+  else
+    h=$(($h+1))
+  fi
+done
+zero=$(($j-$dig))
+zeros=''
+for (( i=1 ; i<=$zero ; i++ )); do
+  zeros=$zeros'0'
+done
+num=$zeros$k
+echo $num
+

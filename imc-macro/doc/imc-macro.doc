@@ -1,0 +1,246 @@
+ ___________________________________________________ 
+|     IMC for Macromolecules                        |
+|     (Inverse Monte Carlo for Macromolecules)      |
+|     v3.81             May 2012                    |
+|___________________________________________________|
+|                                                   |
+|      Author:  Pablo M. De Biase                   |
+|               Biological Sciences                 |
+|               University of Calgary               |
+|               Calgary, Alberta, Canada            |
+|               e-mail: pablodebiase@gmail.com      |
+|                                                   |
+|      Based on IMC 2.1 from:                       |
+|               Alexander Lyubartsev                |
+|               Division of Physical Chemistry      |
+|               Arrhenius Lab.                      |
+|               Stockholm University                |
+|               S-10691 Stockholm Sweden            |
+|               e-mail: sasha@physc.su.se           |
+|___________________________________________________|
+
+The program IMC is intended for reconstruction of pair interaction 
+potentials for monoatomic multicomponent system if the radial distribution 
+functions (RDF) are known. 
+
+This version (IMC-MACRO) is optimized and designed for macromolecules
+or any kind of free plus position-fixed particles system.
+
+The program performs one iteration of the inverse (reverse) Monte 
+Carlo procedure originally suggested in  A.P.Lyubartsev, A.Laaksonen, 
+Phys.Rev.E, v.52(4) 3730 (1995) (relevant references are also:
+A.P.Lyubartesv, A.Laaksonen, Comp.Phys.Comm,v.121-122, 57 (1999) or
+A.P.Lyubartsev, A.Laaksonen, J.Chem.Phys., v.111, 11207 (1999))
+
+The program runs MC simulation using some trial potential (at the first
+iteration, the potential of mean force is used), compares resulting RDF
+with the reference (input) RDF, and produces an improved potential.  
+This improved potential is used at the next iteration, and the procedure 
+is repeated untill convergency. 
+
+
+Installation
+------------
+System requirements: 
+
+- Any operating system with standard gfortran compiler.
+
+Math subroutines are taken from LAPACK linear algebra library. 
+*   Linear equations solution
+
+Compile using e.g, then check bin folder:
+
+cd src
+make 
+make install
+
+Description of binaries obtained
+--------------------------------
+imc-macro # serial implementation
+imc-macro-par # parallel implementation
+imc-macro-par-2 # faster parallel implementation
+
+NOTE: imc-macro-par-2 will produce segmentation fault if compiled with ifort even if -heap-arrays used and will run slower
+NOTE: Restart options and wxyzfq is ignored in imc-macro-par-2. It writes only the initial and final frames.
+NOTE: if segmentation fault using intel, set KMP_STACKSIZE=2G
+
+Input files for the program:
+----------------------------
+1) File with input RDF
+Format:
+** 1-st line contains 4 numbers: **
+ntyp   na   rmin   rmax
+
+ntyp: number of species or particles types
+na: number of grid points on interval [Rmin,Rmax] for which RDF and potential are defined 
+Rmin (usually 0)
+Rmax (usually cut-off distance)
+
+** Then follows ntyp lines with: **
+typename  charge  nopt
+
+typename: species or particle type name
+charge: charge for the particle type
+nopt: number of particles of this kind
+
+** Then follows lines with RDF(s). Each line have 4 parameters: **
+r   rdf   ityp  jtyp
+
+r:  distance
+rdf: normalized particle density  
+ityp: species type number of the 1st particle
+jtyp: species type number of the 2nd particle
+
+Everything in free format.
+An example of input RDF file is nacl.rdf which contains 3 RDFs obtained
+in simulation of NaCl solution.
+
+2) File with trial potential (optional)
+At first iteration, the potential of mean force is used as a trial interaction
+potential. On the next iteractions, output of the previous iteration is used
+as input for the potential. File nacl.pot1 is an example.
+
+3) The main input file (NAMELIST format) with parameters of the simulation.
+Meaning of parameters are: 
+
+ &INPUT
+ IPRINT=5,                           ! level of output ( 5 is a good value)
+ NMKS=100500000,                     ! num. of MC-steps
+ NMKS0=500000,                       ! num of MC steps for equilibration
+ LPOT=.f.,                           ! .t. : trial potential from the input file,
+                                       otherwise mean force potential used
+ LDMP=.t.,                           ! dump restart file
+ LRST=.f.,                           ! .t. - start from the restart file
+                                       otherwise - new run
+ FILRDF='imc-macro.rdf',             ! file with reference RDF
+ FILPOT='imc-macro-in.pot',          ! input file with "trial" potential
+                                       (not needed if LPOT=.f.)
+ FOUT='imc-macro-out.pot',           ! improved potential (output), to be used as
+                                       input at next iteration
+ FDMP='imc-macro.dmp',               ! restart file
+ RSTFQ=10000,                        ! used only if ldmp is true. If 0 dump restart at the end, 
+                                       otherwise dump every rstfq number of steps
+ AF=3.,                              ! Ewald parameter, keep this. (erfc(AF) must be small)
+                                       Put zero if no electrostatics forces out cut-off
+ FQ=19.,                             ! Defines k-cut-off in reciprocal Ewald
+                                       (exp(-FQ) must be small)
+ EPS=78.3,                           ! dielectric permittivity
+ TEMP=300.0,                         ! temperature
+                                       Note: Ewald parameters, Eps and temperature define
+                                       only out cut-off corrections of electrostatic interactions
+ B1X=50.0,                           ! lattice vector 1 x (a non-rectangular lattice will switch lelec=.f.)
+ B1Y=0.0,                            ! lattice vector 1 y (a non-rectangular lattice will switch lelec=.f.)
+ B1Z=0.0,                            ! lattice vector 1 z (a non-rectangular lattice will switch lelec=.f.)
+ B2X=0.0,                            ! lattice vector 2 x (a non-rectangular lattice will switch lelec=.f.)
+ B2Y=50.0,                           ! lattice vector 2 y (a non-rectangular lattice will switch lelec=.f.)
+ B2Z=0.0,                            ! lattice vector 2 z (a non-rectangular lattice will switch lelec=.f.)
+ B3X=0.0,                            ! lattice vector 3 x (a non-rectangular lattice will switch lelec=.f.)
+ B3Y=0.0,                            ! lattice vector 3 y (a non-rectangular lattice will switch lelec=.f.)
+ B3Z=50.0,                           ! lattice vector 3 z (a non-rectangular lattice will switch lelec=.f.)
+ DR=5.,                              ! max particle displacement at each step
+ IOUT=1000,                          ! frequency parameter for writing output
+ IAV=0,                              ! how often <SaSb> evaluated (if iav<=0 -> iav=1.5*number of particles)
+ REGP=1.,                            ! regularization parameter - between  0 and 1
+ DPOTM=20.,                          ! maximum change of the potential at this iteration
+ RTM=10.,                            ! keep this
+ ISEED=777,                          ! random seed integer number. Omit or use number lower-equal 
+                                       zero to use cpu clock as seeder
+ WXYZ=.f.,                           ! If .true. writes an xyz file 
+ WXYZNM='imc-macro-out.xyz',         ! .xyz output filename (Ignored if WXYZ = .f.)
+ WXYZFQ=1000,                        ! frequency of saving for xyz 
+ RXYZ=.f.,                           ! If .true. reads from an xyz file fixed and free particle coordinates and names
+ RXYZNM='imc-macro-in.xyz',          ! .xyz output filename (Ignored if RXYZ = .f.)
+ LDMPPOT=.f.,                        ! if .true. dump first guess of potential or the readed potential and stop
+ LZM=.t.,                            ! if .true., if Ref RDF is not null and if S is zero reduce potential to limit (useful to fix overestimated guess potential values)
+ ZEROMOVE=1.0,                       ! if S is zero move potential up to this limit
+ LELEC=.t.,                          ! if .true. compute electrostatics and ewald
+ LRESPOT=.f.,                        ! if .true. several restriction to the potential for pairs may be specified in respotnm
+ RESPOTNM='imc-macro-fix.pot'        ! Format: rows must contain 2 columns with each particle type numbers
+ LSEPPOT=.f.                         ! Dump separated potential files for each pair (can be used combined with LDMPPOT)
+ LSEPRDF=.f.                         ! Dump separated RDF and S (=4.pi.r^2.RDF) files for each pair
+ &END
+
+A sample input file is included (imc-macro.in)
+The potential is given in the reduce units (i.e., potential/kT )
+
+4) xyz (optional)
+This is an .xyz file that constains fixed particles. Uses the standard xyz format
+Example:
+3 (Number of fixed + free particles)
+2 (Number of Fixed Particles) 
+A    0.0   0.0  0.0   (Fixed)
+B    1.0   0.0  0.0   (Fixed)
+C    0.0   1.0  0.0   (Free)
+
+5) respotnm (optional)
+fix     fix the whole potential
+scale   scale it by a single constant
+shift   shift it by a single constant
+sas     shift and scale by two constants
+free    freely change the potential
+fixce   move freely the potential keeping the center fixed
+
+Example of imc-macro-fix.pot
+1 2 fix
+2 3 scale
+3 4 fixce
+4 5 shift 
+5 6 sas
+6 6 free
+
+Running the program:
+-------------------
+Run the program with the supplied input file:
+
+imc-macro < imc-macro.in  [ > imc-macro.out ]
+
+The program produces output file "imc-macro-out.pot" which contains improved 
+interaction potential. On the next iteration, this potential may be used 
+as an input potential (change parameters   LPOT=.t., FILPOT="imc-macro-in.pot", 
+FOUT="imc-macro-out.pot" for the second iteration).
+
+Number of iteration required for convergency is differ from case to case.
+For ionic solution it is typically 3-5. If you see that the process 
+disconverge, repeat specifying lower regularisation parameters (if you have
+a restart file, it is possible to recalculate new potential with another 
+regularisation parameter without running the simulation again)
+
+Files:
+------
+
+doc/README-imc-macro	- this file
+src/imc-macro.f90  	- Fortran 90 source code.
+test/script             - Bash script. Produces a series of iteration for potential convergence
+                          keeping some pair potentials fixed
+test/39.example         - Input and output sample files obtained from script 
+test/dna-kcl.rdf	- sample input RDF file.
+test/dna-kcl-in.pot	- sample file with interaction potential which is given as input and 
+                          obtained as output from previous iteration.
+test/dna-kcl-fix.pot    - imc-macro-fix.pot sample file 
+test/dna-kcl-in.xyz     - imc-macro-in.xyz sample file
+src/imcpot2xmg		- Bash script. Converts imc potential file to xmgraceable format.
+src/imcrdf2xmg		- Bash script. Converts imc rdf file to xmgraceable format.
+src/calc.f90		- Integer Number Calculator. F90 source to make neccessary executable to run 
+                          test files particulary "script" file.
+src/calcf.f90		- Real Number Calculator. F90 source to make neccessary executable to run
+                          test files particulary "script" file.
+src/imc2xyz.f90		- Converts old rst file to xyz (obsolete)
+src/convertrst.f90	- Converts old rst file to new rst file (obsolete)
+src/ilaenv.f		- LAPACK 3.3.1 single precision routines.
+src/isamax.f  
+src/sger.f    
+src/sgetrs.f  
+src/sswap.f
+src/lsame.f   
+src/sgesv.f   
+src/slamch.f  
+src/strsm.f
+src/sgetf2.f  
+src/slaswp.f  
+src/xerbla.f
+src/ieeeck.f        
+src/iparmq.f        
+src/sgemm.f   
+src/sgetrf.f  
+src/sscal.f
+

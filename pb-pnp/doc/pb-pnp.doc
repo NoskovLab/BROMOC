@@ -1,0 +1,663 @@
+
+
+  Poisson-Boltzmann and Poisson-Nernst-Planck Equations Solver
+  ------------------------------------------------------------
+
+
+  The PB/PNP solver program allows the setting up and the numerical solution 
+of the Poisson-Nernst-Planck and Poisson-Boltzmann equations on a discretized 
+grid for a macromolecule.
+
+References;
+1. B. Roux, Biophys. J. 73:2980-2989 (1997)
+2. M.G. Kurnikova and R.D. Coalson and P. Graf and A. Nitzan, Biophys. J. 76:642-656 (1999)
+3. W. Im and B. Roux, J. Chem. Phys. 115:4850-4861 (2001). 
+4. W. Im and B. Roux, J. Mol. Biol. 322:851-869 (2002). 
+
+WARNING: The program has not been used in numerous situations and caution
+         should be the rule.  All problems should be reported to
+         . Benoit Roux at roux@uchicago.edu, phone 773-834-3557 
+         . Wonpil Im at wonpil@ku.edu 
+         . Sergei Noskov at snoskov@ucalgary.ca
+         . Bernhard Egwolf at egwolf@uchicago.edu
+         . Pablo M. De Biase at pablodebiase@gmail.com   
+
+In the following, the syntax and the function of the program are given.
+
+1. Ion type
+   The ion type is defined for the rest of the calculations. Different ions can 
+be defined in a separate line.
+
+syntax:
+
+IONTYPE
+[ion-type] charge [real] radius [real]
+END
+
+[ion-type]            : ion type (should be less than 4 characters)
+charge      	[0.0] : particle charge [e]
+radius          [0.0] : Born radius [Ang.] (only required if reaction 
+                        field parameters RFPAR are calculated)
+
+example:
+
+IONTYPE
+POT  charge  1.0
+CLA  charge -1.0
+END
+
+
+2. Diffusion constant
+   The diffusion constant of an ion can be set to different values along
+the Z-axis or can be read from an external file which contains a diffusion
+profile. The file should have {z} {D for each ion}. The grid specification
+here should match with the GRID definition (below) for the solver.
+
+syntax:
+
+DIFFUSION_CONSTANT nclz [integer]  dcel [real]  zbcen [real]  dunit [integer]
+[ion-type]  zmin [real]  zmax [real]  diffusion [real]
+END
+
+nclz	     [65]  : number of grid point in Z for a grid box
+dcel         [0.5] : grid spacing
+zbcen        [0.0] : the center of a box in Z
+dunit        [0]   : unit for a file of a diffusion constant profile
+[ion-type]         : ion type (should be defined in IONTYPE, see above)
+zmin         [0.0] : minimum position of a specific diffusion constant along the Z-axis
+zmax         [0.0] : maximum position of a specific diffusion constant along the Z-axis
+diffusion    [0.1] : diffusion constant between [zmax] and [zmin] [Ang.**2/ps]
+                    
+example1: 
+
+DIFFUSION_CONSTANT nclz 65 dcel 0.5 zbcen 0.0
+POT  zmin -100.0 zmax 100.0 diffusion 0.10
+POT  zmin  -12.0 zmax  12.0 diffusion 0.05   ! Now D=0.05 for -12<Z<12
+CLA  zmin -100.0 zmax 100.0 diffusion 0.10
+CLA  zmin  -12.0 zmax  12.0 diffusion 0.05
+END
+
+example2:
+
+open read  unit 9 card name diffusion_constant.dat
+DIFFUSION_CONSTANT nclz 191 dcel 0.5 zbcen 0.0 dunit 11
+
+The file "diffusion_constant.dat" for two ions looks like;
+ -47.50000   0.19600   0.20300
+ -47.00000   0.19600   0.20300
+ -46.50000   0.19600   0.20300
+...
+  46.50000   0.19600   0.20300
+  47.00000   0.19600   0.20300
+  47.50000   0.19600   0.20300
+
+
+3. Boundary concentration
+   Boundary concentrations at the edge of a grid box in the Z-axis is 
+specified for each ion. The boundary concentrations in X and Y planes are
+initially assigned by a linear interpolation. If necessary, [cionxypbc]
+can be issued to use periodic boundary conditions for ionic concentrations
+in X and Y planes during iterations of the PNP solver (see below).
+
+syntax:
+
+BOUNDARY_CONCENTRATION
+[ion-type]  ctop [real]  cbot [real]
+END
+
+[ion-type]         : ion type (should be defined in IONTYPE, see above)
+ctop         [0.0] : ionic concentration at the top of a grid box in Z [mol/L]
+ctop         [0.0] : ionic concentration at the bottom of a grid box in Z [mol/L]
+
+example:
+
+BOUNDARY_CONCENTRATION
+POT  ctop 1.00  cbot 0.10
+CLA  ctop 1.00  cbot 0.10
+END
+
+4. Reading protein structure
+The PB/PNP solver needs the X, Y, and Z coordinates of a macromolecule as well as the atomic radii 
+and charges to set up the equations on a grid. CHARMM format coordinates files can be read twice 
+to provide the atomic radii and charges. 
+
+Syntax
+
+PROTEIN_STRUCTURE  [CHARMM]  runit [integer]  cunit [integer]  unit [integer]  punit - 
+[integer] type [PB/STERN/VDW/]
+
+[CHARMM]           : CHARMM format is used. [cunit] must be provided
+cunit  [-1]        : unit for a CHARMM format coordinate file with atomic charges
+                     in the weighting array
+runit [-1]         : unit for a CHARMM format coordinate file with atomic radii 
+                     in the weighting array ( in the case of use parameter file
+                     you can have any numbers in weighting array)
+unit         [-1]  : unit for a generic coordinate file
+punit        [-1]  : unit for a parameter file containing charges and different radii
+type         [PB]  : type of radii you want to use. 
+                    Current version has 3 different types: PB - Optimized 
+                    Born radius, STERN - PB radii with ion excluded radius and VDW -  
+                    van der Waals radii 
+
+It is possible to use several different options to generate an input protein structure for 
+PB-PNP solver:
+
+1.Specify a separate files in CHARMM format for atomic radii and charges, respectively. 
+(Each of them should be saved on the weighting array in separate coordinate files).
+Example:
+open read unit 10 name rad_pb.crd   ! PBEQ radii
+open read unit 11 name cg.crd       ! charges
+PROTEIN_STRUCTURE CHARMM runit 10 cunit 11
+
+2.Use a generic coordinate format which has {atom number} {X} {Y} {Z} {Charges} {Radii} 
+in a row can be also read.
+Example:
+open read unit 10 name cg_rad.crd   
+PROTEIN_STRUCTURE unit 10
+
+3. Use of attached parameter file with respective radii and charges. User need to specify 
+file with CHARMM coordinate, parameter file and type of radii (default PB) for this 
+operation. CHARMM file is specified under (runit) option.
+
+NOTE: Authors are not responsible for all possible amino-acid residues and other compounds 
+parameters. If parameter you want is not in parameter file just add it in respect to file 
+format!!!
+
+Example:
+open read unit 10 name hl.crd ! sigma / 2
+open read unit 12 name param.dat       ! charges
+
+PROTEIN_STRUCTURE CHARMM runit hl.crd punit param.dat type STERN
+
+5. Iteration Parameters
+   One should specify the iteration parameters for the PB/PNP solver before
+the iteration begins. For PNP calculations, one can specify the number of 
+iterations for PNP [maxpnp], the Poisson [maxphi], and Nernst-Planck [maxcion]
+equations.
+
+		Do i to maxpnp
+			Do j to maxphi
+				Iteration for Poisson Eq.
+			Enddo
+			Do k to maxcion
+				Iteration for NP Eq.
+			Enddo
+		Enddo
+
+If necessary, the parameters can be changed after one calculation by 
+re-invoking ITERATION ..., otherwise specified parameters will be used 
+for successive calculations.
+
+
+ITERATION  maxpnp [integer]  maxphi [integer]  maxcion [integer] -
+           tolphi [real]  tolcion [real]  -
+           lambda [real] lambdaphi [real]  lambdacion [real]
+
+maxpnp       [100] : maximum number of iterations for PNP 
+maxphi      [2000] : maximum number of iterations for PBEQ or Possion Eq. in PNP
+maxcion     [2000] : maximum number of iterations for NP Eq. in PNP
+tolphi    [2.0D-6] : tolerance value for potential in PBEQ or PNP (Possion Eq.) 
+tolcion  [2.0D-10] : tolerance value for concentrations in PNP (NP Eq.)
+lambda       [1.0] : mixing factor for potential during the under-relaxation 
+                     in non-linear PB solver
+lambdaphi    [1.0] : mixing factor for potential between current and previous steps in PNP
+lambdacion   [1.0] : mixing factor for concentration between current and previous steps in PNP
+
+example:
+
+ITERATION maxpnp 300 maxphi 4000 maxcion 2000 -
+          tolphi 2.0D-6 tolcion 5.0D-11 lambda 1.0 lambdaphi 0.02 lambdacion 1.0
+
+
+6. Grid specification
+   Number of grid points, a grid spacing, and a center of a grid can be 
+specified for the PB/PNP solver. One can change any parameters after one
+calculation by re-invoking GRID ... again, otherwise specified parameters 
+will be used for successive calculations.
+
+NOTE: The maximum allowed size of grid points should be pre-specified
+      in pnpsrc/pnp.fcm.
+ 
+syntax:
+
+GRID  ncel [integer]  nclx [integer]  ncly [integer]  nclz [integer] -
+      dcel [real]  xbcen [real]  ybcen [real]  zbcen [real]
+
+ncel         [65]  : number of grid point in 1D for a cubic grid
+dcel         [0.5] : grid spacing
+nclx	     [65]  : number of grid point in X for a grid (orthorhombic) box
+ncly	     [65]  : number of grid point in Y for a grid (orthorhombic) box
+nclz	     [65]  : number of grid point in Z for a grid (orthorhombic) box
+xbcen       [0.0]  : the center of a box in X
+ybcen       [0.0]  : the center of a box in Y
+zbcen       [0.0]  : the center of a box in Z
+
+example:
+
+GRID  nclx 85 ncly  85 nclz  191 dcel 0.50 xbcen 0.0 ybcen 0.0 zbcen 0.0
+
+
+7. Physical parameters
+   Some physical parameters can be specified here for the PB/PNP solver.
+By default, the macromolecule-solvent dielectric boundary is defined by 
+the van der Waals contact surface, i.e., the overlap of given atomic radii. 
+[watr] without [reen] (or [reentrant], see PBEQ iteration below) just increases 
+the atomic radii by it and the defined dielectric boundary is called the
+solvent-accessible surface.  When [watr] is used with [reen], the molecular 
+(contact+reentrant) surface is created.
+
+    With [conc], the modified Debye-Huckel screening factor (kappa2) is
+calculated assuming mono-valent salt. kappa2 is only assigned into the 
+ion-accessible region which is the same as the solvent-accessible region
+without [ionr]. [ionr] can be used to exclude the ion-accessibility further
+by it from the atomic radii.
+
+syntax:
+
+PHYSICAL_PARAMETERS  epsp [real]  epsw [real]  temp [real]  -
+                     conc [real]  watr [real]  ionr [real]
+
+epsp        [1.0] : protein interior dielectric constant
+epsw       [80.0] : bulk solvent dielectric constant
+temp      [300.0] : Temperature [K]
+conc        [0.0] : salt concentration [mol/L]
+watr        [0.0] : solvent probe radius [Ang.]
+ionr        [0.0] : ion exclusion radius [Ang.]
+
+example:
+
+PHYSICAL_PARAMETERS epsp 2.0 epsw 80.0 temp 300.0 conc 1.00 watr 0.0 ionr 0.0
+
+
+8. Membrane
+   It is assumed that the membrane normal is parallel with the Z-axis in 
+the current implementation. [vmemb] is assigned at Z > 0 such that the 
+conventional transmembrane potential is -[vmemb]. (See, Ref. 1 for the 
+details of the transmembrane potential)
+
+syntax:
+
+MEMBRANE  tmemb [real]  epsm [real]  htmemb [real]  epsh [real]  zmemb [real]  vmemb [real]
+
+tmemb       [0.0] : total thickness of membrane along Z [Ang.]
+htmemb      [0.0] : thickness of headgroup region [Ang.]
+zmemb       [0.0] : membrane position  along Z [Ang.]
+epsm        [1.0] : membrane dielectric constant
+epsh       [EPSM] : membrane headgroup dielectric constant (optional)
+vmemb       [0.0] : potential difference across membrane [Volt]
+
+example:
+
+MEMBRANE tmemb 34.0 epsm 2.0 htmemb 0.0 epsh 1.0 zmemb  -5.5 vmemb  -0.150
+
+
+9. Objects
+   Various objects are implemented such as a sphere, a cylinder, a box, 
+and an overlay cylinder.  By default, the screening factor kappa2 is set 
+to zero inside the objects, i.e., ions are not allowed to be there. But, 
+one can change this by [skappa], [ckappa], [bkappa], [okappa] and [eckap] to have 
+the ion-accessibility inside the objects. The current order of implementation 
+of the objects is sphere-ecylinder-cylinder-box. The protein overwrites these objects.
+The overlay cylinder is applied last and overwrites all previous objects and 
+the protein. To change the order, one should change pnpsrc/mayer.f (sorry, 
+search _SPHE).
+
+NOTE: Setting [epss], [epsc], [epsb], [epso] or [epsec] to zero does not mean that 
+the dielectric constant inside the objects is actually set to zero. Instead, 
+it skips the setting of the dielectric constant inside the objects such that 
+the previous dielectric setup is not changed with the objects.
+
+syntax:
+
+OBJECTS rsphe [real]  xsphe [real]  ysphe [real]  zsphe [real]  -
+        epss [real] [skappa]  -
+        rcyln [real]  hcyln [real]  xcyln [real]  ycyln [real]  zcyln [real]  -
+        epsc [real]  [ckappa] -
+        bxmax [real]  bymax [real]  bzmax [real]  -
+        bxmin [real]  bymin [real]  bzmin [real]  epsb [real] [bkappa] -
+        rocyl [real]  hocyl [real]  xocyl [real]  yocyl [real]  zocyl [real] -
+        epso [real]  [okappa] -
+        ax [real] bx [real] tmin [real] hecyln [real] xecyln [real] yecyl [real] zecyl [real] -
+        epsec [real] [eckap]
+
+ SPHERE PARAMETERS
+rsphe        [0.0] : radius of a spherical cavity
+x,y,zsphe    [0.0] : XYZ position of a sphere center
+epss         [1.0] : dielectric constant of a spherical cavity 
+[skappa]           : the Debye-Huckel factor inside sphere is set to kappa2
+
+ CYLINDER PARAMETERS
+rcyln        [0.0] : radius of a cylinder
+hcyln        [0.0] : height of a cylinder
+x,y,zcyln    [0.0] : XYZ position of a cylinder center
+epsc         [1.0] : dielectric constant inside cylinder
+[ckappa]           : the Debye-Huckel factor inside cylinder is set to kappa2
+
+ Rectangular Box PARAMETERS
+bx,y,zmax    [0.0] : maximum position of a box in X,Y,Z
+bx,y,zmin    [0.0] : minimum position of a box in X,Y,Z
+epsb         [1.0] : dielectric constant inside box
+[bkappa]           : the Debye-Huckel factor inside box is set to kappa2
+
+ Overlay CYLINDER PARAMETERS
+rocyl        [0.0] : radius of an overlay cylinder
+hocyl        [0.0] : height of an overlay cylinder
+x,y,zocyl    [0.0] : XYZ position of an overlay cylinder center
+epso         [1.0] : dielectric constant inside overlay cylinder
+[okappa]           : the Debye-Huckel factor inside overlay cylinder is set to kappa2
+
+ Elliptic CYLINDER PARAMETERS
+ax           [0.0] : x radius of an Elliptic cylinder
+by           [0.0] : y radius of an Elliptic cylinder
+tmin         [1.0] : ?
+hecyln       [0.0] : height of an Elliptic cylinder
+(x,y,z)ecyln [0.0] : XYZ position of an overlay cylinder center
+epsec        [1.0] : dielectric constant inside elliptic cylinder
+[eckap]            : the Debye-Huckel factor (dielectric constant) inside elliptic cylinder is set to kappa2
+
+
+example:
+
+OBJECTS rsphe  0.0  xsphe  0.0  ysphe  0.0  zsphe  0.0  epss   0.0  -
+        rcyln 35.0  hcyln 34.0  xcyln -14.9 ycyln 11.1  zcyln -5.5  epsc 80.0  ckappa -
+        bxmax  22.25 bymax  22.25 bzmax  43.25 -
+        bxmin -22.25 bymin -22.25 bzmin -43.25 epsb 0.0 -
+        rocyl  0.0  hocyl  0.0  xocyl  0.0  yocyl  0.0  zocyl  0.0  epso  0.0
+
+
+10. PB iteration
+    By default, the linearized PB equation is solved using the 
+finite-difference method. To solve the non-linear PB, [nonlinear] should
+be issued. Because it is not easy to solve the non-linear PB numerically
+from the scratch, it is strongly recommended to solve the linearized PB
+first and use the resulting potential as the initial guess for the 
+non-linear PB with [phi]. In this case, the grid setup can be avoided simply 
+by [skipgridsetup].
+Often, one needs to use the under-relaxation method where a fixed mixing 
+parameter [lambda] (see above) is used. There is no magic number for [lambda], 
+so first try 1.0 then reduce it gradually if it fails.
+
+    To create the molecular (contact+reentrant) surface, one can specify 
+[reen] or [reentrant] here. 
+
+    By default, the Debye-Huckel approximation at each boundary point is used
+to setup the boundary potential. When there are lots of atoms in the system, 
+it may take some time to setup the boundary potential. If necessary, one can
+avoid the setup simply by [zerobp]. XY periodic boundary conditions can be used 
+in presence of membrane simply by [phixypbc] The full periodic boundary condition 
+can be used by [phixyzpbc]. The focusing method can be also used for successive
+finer grid calculations by [phifocus] and by specifying the previous grid with
+[pncel] [pnclx] .....
+
+syntax:
+
+PBEQ [skipgridsetup] [nonlinear] [underrelax] [reen or reentrant] -
+     [zerobp] [phixypbc] [phixyzpbc] [phifocus] [phi] -
+     pncel [integer] pnclx [integer]  pncly [integer]  pnclz [integer]  -
+     pdcel [real]  pxbcen [real]  pybcen [real]  pzbcen [real]
+
+[skipgridsetup]   : go directly to PBEQ iteration without any grid setup
+[nonlinear]       : solve the non-linear PB equation
+[underrelax]      : use the under-relaxation with a fixed mixing factor [lambda]
+[zerobp]          : set the boundary potential to ZERO
+[phi]             : use the current potential for initial guess for nonlinear PBEQ
+[phixypbc]        : XY periodic boundary conditions for potential
+[phixyzpbc]       : XYZ periodic boundary conditions for potential
+[phifocus]        : use previous potential to set up boundary potential
+pncel      [ncel] : previous number of grid point in 1D for a cubic grid
+pdcel      [dcel] : previous grid spacing
+pnclx	   [nclx] : previous number of grid point in X for a grid (orthorhombic) box
+pncly	   [ncly] : previous number of grid point in Y for a grid (orthorhombic) box
+pnclz	   [nclz] : previous number of grid point in Z for a grid (orthorhombic) box
+pxbcen    [xbcen] : previous center of a box in X
+pybcen    [ybcen] : previous center of a box in Y
+pzbcen    [zbcen] : previous center of a box in Z
+
+example:
+
+PBEQ  phixypbc
+
+PBEQ  phifocus -
+      pnclx 65 pncly 65 pnclz 65 pdcel 1.00 pxbcen 0.0 pybcen 0.0 pzbcen 0.0
+
+
+11. PNP iteration
+    The PNP equations are solved using the finite-difference method; 
+the Poisson equation for potential and the Nernst-Planck equation for
+concentrations. Similar options as in PB iteration can be used.
+
+    Periodic boundary conditions can be used for potentials [phixypbc]
+as well as concentrations [cionxypbc] in XY directions. The focusing
+method can be also used for concentrations. However, when the finer grid 
+cuts any part of your macromolecule, the boundary concentrations may be
+incorrect.
+
+   In most cases, it is hard to solve the PNP equation numerically using
+the finite-difference method from scratch. Therefore, the best way is to 
+start to solve the PNP equations by first solving the NP equation using the 
+potential calculated from the PB equation. Sometimes, one should play with 
+[lambdaphi] and [lambdacion] to get the solution. Based on our numerical 
+experiments, [lambdacion] can be big such as 1.0, but [lambdaphi] should be 
+smaller such as 0.02 (one can also adjust this number). The reason is that 
+the steady-state NP Eq. is very sensitive to small changes in potential 
+whereas the Poisson Eq. is relatively insensitive to changes in concentrations.
+
+   If necessary, different ion-accessible space can be used for different 
+ions with [nmcden]. The separate (binary) files for ion-accessible space 
+of each ion should be supplied.
+
+syntax:
+
+PNP  [phixypbc] [cionxypbc] [cionfocus] [nmcden]  - 
+     pnclx [integer]  pncly [integer]  pnclz [integer]  pdcel [real] -
+     pxbcen [real]  pybcen [real]  pzbcen [real]    
+
+[phixypbc]        : XY periodic boundary conditions for potential
+[cionxypbc]       : XY periodic boundary conditions for concentrations
+[phifocus]        : use previous potential to set up boundary potential
+[cionfocus]       : use previous concentrations to set up boundary concentrations
+[nmcden]          : use different ion-accessible space for different ions  
+pncel      [ncel] : previous number of grid point in 1D for a cubic grid
+pdcel      [dcel] : previous grid spacing
+
+pnclx	   [nclx] : previous number of grid point in X for a grid (orthorhombic) box
+pncly	   [ncly] : previous number of grid point in Y for a grid (orthorhombic) box
+pnclz	   [nclz] : previous number of grid point in Z for a grid (orthorhombic) box
+pxbcen    [xbcen] : previous center of a box in X
+pybcen    [ybcen] : previous center of a box in Y
+pzbcen    [zbcen] : previous center of a box in Z
+
+example:
+
+PNP phi phixypbc cionxypbc
+
+
+12. Counterion profile
+    Counterion profiles can be calculated along the Z-axis after the PB 
+calculations are done. By default, the ion density is calculated based on
+the linearized form (rho(r)=rho_bulk*(1-q*phi(r)/kT). The Boltzmann density
+distribution, rho(r)=rho_bulk*exp[-q*phi(r)/kt], can be calculated with 
+[nonlinear]. 
+
+syntax:
+
+COUNTERION [nonlinear]
+
+[nonlinear]       : use the Boltzmann distribution for ion density
+
+example:
+
+COUNTERION nonlinear
+
+
+13. Profiles for ion density, fluxes, and currents
+    Various profiles for ion density, fluxes, and currents can be calculated 
+along the Z-axis after the PNP calculations are done.
+
+syntax:
+
+PROFILE [rho]  [flux]  [current]
+
+[rho]             : print ion density along Z
+[flux]            : print fluxes  along Z
+[current]         : print currents  along Z
+
+example:
+
+PROFILE rho flux current
+
+
+14. Reaction field matrix MMIJ
+    The reaction field matrix MMIJ is calculated based on the multipolar
+basis-set expansion. According to ref. 3, the Legendre polynomials are 
+only used for a basis-set. Based on our experience, the cut-off value for
+the eigenvalues of the overlap matrix SIJ is set to 0.003 by default. One
+can use all the options for PHYSICAL_PARAMETERS, MEMBRANE, and OBJECTS to
+construct the matrix.
+
+    For efficient calculations, the fine-grid calculations are performed 
+after coarse-grid calculations using the focusing method. Thus, a larger
+grid should be provided with [lncel] and [ldcel]. For simplicity, only a
+cubic grid is considered for the larger grid.
+
+syntax:
+
+RXNFLD xnpol [integer] ynpol [integer] znpol [integer] tolsij [real] -
+       xmax [real] ymax [real] zmax [real] -
+       xmin [real] ymin [real] zmin [real] srcut [real] -
+       [phiXYPBC] -      
+       lncel [integer] ldcel [real] lxbcen [real] lybcen [real] lzbcen [real]
+
+x(y,z)npol    [0] : number of Legendre polynomials in XYZ directions
+tolsij    [0.003] : cuf-off value of the eigenvalues of the overlap matrix SIJ
+x(y,z) max  [0.0] : orthorhombic region where Legendre polynomials are applied
+x(y,z) min  [0.0] : to construct the matrix MMIJ
+srcut       [0.0] : if srcut is greater than 0.0, the reaction field is calculated
+                    for a spherical simulation region with radius of srcut.
+[phixypbc]        : XY periodic boundary conditions for potential
+ldcel    [4*DCEL] : grid spacing of large box
+lncel        [33] : number of grid point in 1D for a cubic large box
+lx(y,z)bcen [0.0] : the center of a large box in XYZ
+
+example:
+(orthorhombic)
+RXNFLD xnpol 3 ynpol  3 znpol 4 tolsij 0.003 -
+       xmax  22.25 ymax  22.25 zmax  43.25 -
+       xmin -22.25 ymin -22.25 zmin -43.25 -
+       phixypbc -
+       lncel 101 ldcel 1.5 lxbcen -14.9 lybcen  11.1 lzbcen  0.0
+
+(spherical)
+RXNFLD xnpol 3 ynpol 3 znpol 3 tolsij 0.003 -
+       srcut 43.25 -
+       srxcen -14.9 srycen 11.1 srzcen 0.0 -
+       phixypbc -
+       lncel 101 ldcel 1.5 lxbcen -14.9 lybcen  11.1 lzbcen  0.0
+
+
+15. Reaction field parameters (RFPAR)
+    Reaction field parameters are calculated at all grid points 
+which are located within a GCMC/BD simulation system and which are 
+in contact with the dielectric solvent continuum. The default is a 
+spherical simulation system defined by the OBJECTS sphere parameters.  
+An orthorhombic simulation system defined by the OBJECTS box parameters 
+is also possible by adding the option [box].
+    
+    To create the molecular (contact+reentrant) surface, one can specify 
+[reen] or [reentrant] as the last RFPAR option (see physical parameters). 
+
+    RFPAR belongs to a different reaction field method than MMIJ.
+RFPAR requires the Born radii of the ion types (IONTYPE), the grid 
+parameters (GRID), dielectric constants (PHYSICAL_PARAMETERS), and the 
+sphere or box parameters (OBJECTS), respectively. Further details of 
+a system can be specified by MEMBRANE, by the OBJECTS cylinder 
+parameters, and by PROTEIN_STRUCTURE. 
+
+syntax:
+
+RFPAR  [box] rcut [real] [reen or reentrant] 
+
+[box]             : orthorhombic simulation system instead of a spherical one
+[reen]            : molecular (contact+reentrant) surface (see physical parameters)
+[reentrant]       : see [reen]
+
+example:
+
+RFPAR  box reen
+
+
+16. Write various grid properties
+    The WRITE command is used to write out various grid properties. By default, 
+a binary file of the property will be written for the whole grid. The keyword 
+[card] implies that a formatted output will be produced ([mmij] and [rfpar]
+solely generate binary files).  In that case, the spatial range can be specified 
+for the output.  By default, the electrostatic potential [phi] is given in 
+[UNIT CHARGE]/[ANGS].  If specified, the [phi] can be given in [VOLTS] or in 
+[KCAL/MOL].
+
+syntax:
+
+WRITE   property [[card] [write-range]] unit [integer]
+
+write-range = xfirst [real]  yfirst [real]  zfirst [real] 
+              xlast  [real]  ylast  [real]  zlast  [real]
+
+property=    [[phi] [kcal] [volts]]
+             [kappa2]
+             [charge]
+             [epsx] [epsy] [epsz]
+             [[cion] [ion-type]]
+             [[flux] [ion-type]]
+             [cg]
+             [mmij]
+             [[rfpar] [ion-type]]
+
+[phi]             : electrostatic potential (in [unit charge]/[Ang.])
+          [kcal]  : electrostatic potential in kcal/mol
+          [volts] : electrostatic potential in volts
+[kappa2]          : Debye screening factor
+[charge]          : protein charges on the lattice
+[epsx]            : X sets of dielectric constant
+[epsy]            : Y sets of dielectric constant
+[epsz]            : Z sets of dielectric constant
+[cion]            : ionic concentration in [unit charge]/[Angs^3]
+[flux]            : fluexes (Jx, Jy, Jz) in [unit charge]/[ps][Angs^2]
+[cg]              : ionic charges on the lattice calculated from ionic concentrations
+[mmij]            : reaction field matrix MIJ
+[rfpar]           : reaction field parameters
+
+example:
+
+open write unit 15 file name vmp+000.phi
+write phi  unit 15
+
+write flux POT card unit 6 zfirst -100.0 zlast  100.0
+
+
+17. Read
+    The READ command is used to read the electrostatic potential [phi] in 
+[UNIT CHARGE]/[ANGS], Debye screening factor [kappa2] or [access], the ionic 
+concentrations [cion].  [kappa2] can be also served as the ion-accessible 
+space. 
+    When the different ion-accessible space should be read, one can use 
+[iontype] to specify the corresponding ion explicitly.
+
+
+syntax: 
+
+READ  [phi] [[kappa2] or [mcden] [iontype]] [[cion] [iontype]]unit [integer]
+
+example:
+
+open read  unit 13 file name mcden.dat
+read mcden unit 13
+
+18. Stop
+    Stop the programs.
+
+syntax:  
+
+STOP
+ 
+
+

@@ -1,0 +1,109 @@
+#/bin/bash
+echo
+echo 'BROMOC Suite' 
+echo '************'
+echo 'Created: 2011-2014'
+echo 'author: Pablo M. De Biase'
+echo 'e-mail: pablodebiase@gmail.com'
+
+echo
+echo 'Installing BROMOC Suite ...'
+echo
+if [ "$1" == "intel" ]; then
+  echo  
+  echo 'Installing BROMOC (CG-GCMC-BD) ...'
+  echo  
+  cd cg-gcmc-bd/src
+  make clean -f Makefile_intel
+  make -f Makefile_intel
+  make install -f Makefile_intel
+  make clean -f Makefile_intel
+  cd ../..
+  echo  
+  echo 'Installing IMC-MACRO ...'
+  echo  
+  echo 'NOTE: If compiling using INTEL and you are getting unexpected termination or error like segmentation fault when running imc-macro-2. Try this:'
+  echo 'KMP_STACKSIZE=2G imc-macro-par-2 < input > output '
+  cd imc-macro/src
+  make clean -f Makefile_intel
+  make -f Makefile_intel
+  make install -f Makefile_intel
+  make clean -f Makefile_intel
+  cd ../scripts
+  ./mklnks
+  cd ../..
+  echo  
+  echo 'Installing PB-PNP ...'
+  echo  
+  cd pb-pnp/src
+  make clean -f Makefile_intel
+  make -f Makefile_intel
+  make install -f Makefile_intel
+  make clean -f Makefile_intel
+  cd ../..
+  echo  
+  echo 'Installing TOOLS ...'
+  echo  
+  cd tools/src
+  ./makeall intel
+  cd ../..
+else
+  echo  
+  echo 'Installing BROMOC (CG-GCMC-BD) ...'
+  echo  
+  cd cg-gcmc-bd/src
+  make clean -f Makefile_gfortran
+  make -f Makefile_gfortran
+  make install -f Makefile_gfortran
+  make clean -f Makefile_gfortran
+  cd ../..
+  echo  
+  echo 'Installing IMC-MACRO ...'
+  echo  
+  cd imc-macro/src
+  make clean -f Makefile_gfortran
+  make -f Makefile_gfortran
+  make install -f Makefile_gfortran
+  make clean -f Makefile_gfortran
+  cd ../scripts
+  ./mklnks
+  cd ../..
+  echo  
+  echo 'Installing PB-PNP ...'
+  echo  
+  cd pb-pnp/src
+  make clean -f Makefile_gfortran
+  make -f Makefile_gfortran
+  make install -f Makefile_gfortran
+  make clean -f Makefile_gfortran
+  cd ../..
+  echo  
+  echo 'Installing TOOLS ...'
+  echo  
+  cd tools/src
+  ./makeall
+  cd ../..
+fi
+echo 
+echo
+echo 'Adding PATH to ~/.bashrc'
+echo 'export PATH='$PWD'/bin:$PATH' >> ~/.bashrc
+export PATH='$PWD'/bin:$PATH
+echo
+
+echo '---------------------------------------------------------------'
+echo 'If you use this program please site us:'
+echo ''
+echo 'BROMOC-D: Brownian Dynamics/Monte-Carlo Program Suite to Study Ion and DNA Permeation in Nanopores'
+echo 'Pablo M. De Biase, Carlos J. F. Solano, Suren Markosyan, Luke Czapla, and Sergei Yu. Noskov*'
+echo 'J Chem Theory Comput. Jul 10, 2012; 8(7): 2540-2551.'
+echo 'Published online May 24, 2012. doi:  10.1021/ct3004244'
+echo ''
+echo 'Microsecond simulations of DNA and ion transport in nanopores with novel ion-ion and ion-nucleotides effective potentials'
+echo 'Pablo M. De Biase*, Suren Markosyan and Sergei Noskov*'
+echo 'J Comput Chem. 2014 Apr 5;35(9):711-721.'
+echo 'Article first published online: 12 FEB 2014'
+echo 'DOI: 10.1002/jcc.23544'
+echo ''
+echo '---------------------------------------------------------------'
+

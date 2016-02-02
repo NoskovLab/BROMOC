@@ -1,0 +1,18 @@
+#!/bin/bash
+for (( i=1; i<=100 ; i++ )); do 
+  if [ -d $i ]; then 
+    echo "$i: $(grep '=>' $i/dna-ions.out)"
+  fi
+done > list
+maxrdf=$(awk '{print $8}' list | sort -g |  head -1)
+maxs=$(awk '{print $11}' list | sort -g |  head -1)
+lines=$(cat list | wc -l)
+for (( i=1; i<=$lines; i++ )); do
+  rdf=$(sed -n $i'p' list | awk '{print $8}')
+  s=$(sed -n $i'p' list | awk '{print $11}')
+  normrdf=$(calcf $rdf % $maxrdf)
+  norms=$(calcf $s % $maxs)
+  sum=$(calcf $normrdf + $norms)
+  sum=$(calcf $sum % 2.0)
+  echo "$(sed -n $i'p' list)"'  idx =>    '$sum
+done | sort -k 14 -g 

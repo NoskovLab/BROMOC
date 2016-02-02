@@ -1,0 +1,4 @@
+To compile
+==========
+cd tools/src
+./makeall

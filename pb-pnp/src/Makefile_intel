@@ -1,0 +1,62 @@
+#! /usr/bin/make
+#
+# Main program and default target
+
+obj    = pb-pnp
+all : $(obj)
+
+# System dependent compilation commands
+
+FCOMPL = ifort
+FFLAGC = -fPIC -mcmodel=large -ip -O3 -xHost -shared-intel -shared-libgcc
+CCOMPL = icc
+CFLAGC =
+#opt    = -mtune=pentium4m -m64 -O3 -no-prec-div -static -ip ! don't use
+#opt = -fast -no-prec-sqrt -ip -ftz # don't use #fast implies -ipo -O3 -no-prec-div -static -xHost
+#opt = -ip -O3 -static -xHost
+# add -xHost to optimize using the highest instruction in the compiler computer processor
+SYSDEP =
+UTILS  = 
+#ldflag = -static
+
+# Implicit rules
+
+.SUFFIXES:
+.SUFFIXES: .vec .f .c .s .o .a .lib .f90
+
+.f.o:
+	$(FCOMPL) -c $(FFLAGC) $(opt) -o $@ $<
+
+.f90.o:
+	$(FCOMPL) -c $(FFLAGC) $(opt) -o $@ $<
+
+.s.o:
+	as -o $@ $<
+
+.c.o:
+	$(CCOMPL) -c $(CFLAGC) $(opt) -o $@ $<
+
+.lib.a:
+	make -f $(<:.lib=.Makefile) $@
+	make -f $(<:.lib=.Makefile) clean
+
+# Object files
+
+OBJECTS = charfuncmod.o charman.o cputime.o mayer.o misc.o pbeqsolver.o pnpanal.o pnpinit.o pnpio.o pnpmain.o pnpsolver.o prep.o matrix.o mmij.o rfpar.o
+
+IFILES = consta.fcm mainio.fcm misc.fcm mmij.fcm pnp.fcm rfintsph.fcm
+# Clean objects
+
+clean:
+	@rm -f $(OBJECTS) $(obj) *.mod
+
+# Main program target
+
+$(obj): $(SYSDEP) $(VECTOR) $(OBJECTS) $(FFILES) $(UTILS)
+	$(FCOMPL) $(FFLAGC) $(ldflag) -o $(obj) $(OBJECTS) $(SYSDEP) $(UTILS)
+
+install:
+	@mv $(obj) ../bin/
+	@rm -f ../../bin/$(obj)
+	@ln -s ../pb-pnp/bin/$(obj) ../../bin/$(obj)
+
